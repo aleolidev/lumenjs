@@ -1,6 +1,7 @@
 # Product specification direction
 
-Status: direction approved; First Light implementation authorized on 2026-07-11.
+Status: direction approved; First Light completed and its visual direction
+approved on 2026-07-11. Phase 2 is awaiting specification review.
 
 This document turns the capability inventory into delivery phases and proposes
 the first production-quality vertical prototype. It is a prioritization
@@ -86,6 +87,12 @@ Candidate scope:
 
 Phase 2 must begin with a specification review of Phase 1 evidence. No Phase 1
 boundary automatically becomes public API.
+
+The focused proposal is recorded in
+`docs/phase-2-campaign-slice-specification.md`. Its first increment deliberately
+limits scope to dialogue, a companion choice, one deterministic battle, and one
+authored recruitment outcome. Persistence, audio, and broader input work remain
+deferred until that loop is validated.
 
 ### Phase 3: creator workflow and standard preset
 
