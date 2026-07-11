@@ -1,0 +1,36 @@
+{
+  "name": "lumenjs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npm run check:format && npm run check:types && npm run test:node",
+    "check:format": "biome check .",
+    "check:types": "tsc --noEmit",
+    "ci": "npm run check && npm run test:browser",
+    "format": "biome check --write .",
+    "check:spikes": "node --test spikes/**/*.test.js",
+    "build": "vite build",
+    "dev": "vite",
+    "dev:spikes": "vite spikes/browser",
+    "test:node": "node --test src/**/*.test.js spikes/**/*.test.js",
+    "test:browser": "playwright test",
+    "test:gpu": "LUMEN_REQUIRE_GPU=1 playwright test tests/browser/first-light.gpu.spec.js --headed --project=chromium --workers=1"
+  },
+  "dependencies": {
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16",
+    "@playwright/test": "1.60.0",
+    "@types/node": "22.20.1",
+    "@webgpu/types": "0.1.69",
+    "idb": "8.0.3",
+    "typescript": "6.0.3",
+    "vite": "8.0.16"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "npm@11.6.1"
+}

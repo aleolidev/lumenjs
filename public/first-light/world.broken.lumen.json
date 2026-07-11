@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "mapId": "lantern-vale",
+  "mapSource": "lantern-vale.tmj",
+  "spawn": "missing-spawn",
+  "character": {
+    "object": "vale-guide",
+    "name": "Mira",
+    "messageBefore": "The old beacon is waiting for a spark.",
+    "messageAfter": "Now the east trail can find its way home."
+  },
+  "beacon": {
+    "object": "old-beacon",
+    "stateKey": "beacon-lit"
+  },
+  "bridge": {
+    "deck": "sunbeam-bridge",
+    "underpass": "bridge-underpass"
+  },
+  "transition": {
+    "object": "east-trail",
+    "target": "west-spawn"
+  }
+}

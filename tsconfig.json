@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "@webgpu/types"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "playwright.config.js",
+    "src/**/*.js",
+    "src/**/*.d.ts",
+    "tests/**/*.js",
+    "spikes/**/*.js",
+    "spikes/**/*.d.ts"
+  ]
+}

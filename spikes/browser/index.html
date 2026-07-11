@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LumenJS browser spike</title>
+    <style>
+      html { color-scheme: dark; font: 14px system-ui; background: #11151c; }
+      body { margin: 0; display: grid; min-height: 100vh; place-items: center; }
+      main { display: grid; gap: 12px; }
+      canvas { width: 640px; max-width: 90vw; image-rendering: pixelated; border: 1px solid #455; }
+      pre { margin: 0; color: #b8c7d9; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <canvas id="scene" width="640" height="360"></canvas>
+      <canvas id="gpu-probe" width="4" height="4" hidden></canvas>
+      <pre id="capabilities">probing</pre>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

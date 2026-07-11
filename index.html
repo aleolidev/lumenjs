@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#09171d">
+    <title>First Light · LumenJS</title>
+    <link rel="stylesheet" href="/src/app/first-light.css">
+  </head>
+  <body>
+    <main class="playtest-shell">
+      <header>
+        <div>
+          <p class="eyebrow">LumenJS focused playtest</p>
+          <h1>First Light</h1>
+        </div>
+        <p id="status" class="status" role="status">Loading project…</p>
+      </header>
+
+      <section class="viewport" aria-label="Lantern Vale playtest">
+        <canvas id="scene" width="960" height="540"></canvas>
+        <div id="unsupported" class="unsupported" hidden>
+          <strong>WebGPU unavailable</strong>
+          <span>The project loaded, but this browser cannot render the playtest.</span>
+        </div>
+        <p id="message" class="message" aria-live="polite" hidden></p>
+      </section>
+
+      <section class="controls" aria-label="Playtest controls">
+        <div>
+          <p><kbd>WASD</kbd> or <kbd>arrows</kbd> move · <kbd>Space</kbd> interacts</p>
+          <p>Speak to Mira, light the beacon, then find the east trail.</p>
+        </div>
+        <div class="control-buttons">
+          <button id="visual-mode" type="button" aria-pressed="false">Visual mode: Classic</button>
+          <button id="replay" type="button">Run canonical replay</button>
+        </div>
+      </section>
+
+      <details class="diagnostics" open>
+        <summary>Diagnostics</summary>
+        <pre id="diagnostics">Waiting for validated project…</pre>
+      </details>
+
+      <section id="errors" class="errors" aria-label="Project errors" hidden>
+        <h2>Project could not be loaded</h2>
+        <ul></ul>
+      </section>
+    </main>
+    <script type="module" src="/src/app/first-light.js"></script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+# Local task continuity; never commit.
+/notes/
+
+# Generated dependencies, builds, and test artifacts.
+/node_modules/
+/test-results/
+/playwright-report/
+/coverage/
+/dist/

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "mapId": "first-town",
+  "source": "town.tmj",
+  "events": {
+    "meet-guide": {
+      "kind": "dialogue",
+      "dialogueId": "welcome"
+    }
+  }
+}

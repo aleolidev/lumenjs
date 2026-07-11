@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Save and resume compact task context"
+  default_prompt: "Use $handoff to save or resume this task context."

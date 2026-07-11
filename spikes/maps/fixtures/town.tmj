@@ -1,0 +1,39 @@
+{
+  "type": "map",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "width": 4,
+  "height": 4,
+  "tilewidth": 16,
+  "tileheight": 16,
+  "infinite": false,
+  "layers": [
+    {
+      "id": 1,
+      "name": "ground",
+      "type": "tilelayer",
+      "width": 4,
+      "height": 4,
+      "data": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    },
+    {
+      "id": 2,
+      "name": "events",
+      "type": "objectgroup",
+      "objects": [
+        {
+          "id": 1,
+          "name": "meet-guide",
+          "type": "lumen-event",
+          "x": 16,
+          "y": 16,
+          "width": 16,
+          "height": 16
+        }
+      ]
+    }
+  ],
+  "tilesets": [{ "firstgid": 1, "source": "terrain.tsj" }]
+}

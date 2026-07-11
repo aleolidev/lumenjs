@@ -1,0 +1,45 @@
+{
+  "format": "lumen-first-light-replay-v1",
+  "projectVersion": "0.1.0",
+  "actions": [
+    "move-north",
+    "move-east",
+    "move-east",
+    "interact",
+    "move-south",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east",
+    "move-east"
+  ],
+  "expectedStateHash": "fnv1a32-v1:e56c7dde",
+  "expectedFacts": [
+    { "type": "player-moved", "x": 2, "y": 6 },
+    { "type": "player-moved", "x": 3, "y": 6 },
+    { "type": "player-moved", "x": 4, "y": 6 },
+    { "type": "flag-changed", "key": "beacon-lit", "value": true },
+    {
+      "type": "character-spoke",
+      "id": "vale-guide",
+      "message": "The old beacon is waiting for a spark."
+    },
+    { "type": "player-moved", "x": 4, "y": 7 },
+    { "type": "player-moved", "x": 5, "y": 7 },
+    { "type": "player-moved", "x": 6, "y": 7 },
+    { "type": "player-moved", "x": 7, "y": 7 },
+    { "type": "player-moved", "x": 8, "y": 7 },
+    { "type": "player-moved", "x": 9, "y": 7 },
+    { "type": "player-moved", "x": 10, "y": 7 },
+    { "type": "player-moved", "x": 11, "y": 7 },
+    { "type": "player-moved", "x": 12, "y": 7 },
+    { "type": "player-moved", "x": 13, "y": 7 },
+    { "type": "player-moved", "x": 14, "y": 7 },
+    { "type": "map-transition", "id": "east-trail", "target": "west-spawn" }
+  ]
+}
