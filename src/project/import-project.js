@@ -1,22 +1,27 @@
 import { Ajv2020 } from "ajv/dist/2020.js";
-import { manifestSchema, tiledMapSchema, worldSchema } from "./schemas.js";
+import { campaignSchema, manifestSchema, tiledMapSchema, worldSchema } from "./schemas.js";
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 const validateManifest = ajv.compile(manifestSchema);
 const validateMap = ajv.compile(tiledMapSchema);
 const validateWorld = ajv.compile(worldSchema);
+const validateCampaign = ajv.compile(campaignSchema);
 
 export function importProject(sources, paths = defaultPaths) {
   const errors = [
     ...structuralErrors(validateManifest, sources.manifest, paths.manifest),
     ...structuralErrors(validateMap, sources.map, paths.map),
-    ...structuralErrors(validateWorld, sources.world, paths.world)
+    ...structuralErrors(validateWorld, sources.world, paths.world),
+    ...(sources.campaign
+      ? structuralErrors(validateCampaign, sources.campaign, paths.campaign)
+      : [])
   ];
   if (errors.length > 0) return { valid: false, errors, world: null };
 
   const manifest = sources.manifest;
   const map = sources.map;
   const metadata = sources.world;
+  const campaign = sources.campaign ?? null;
   if (manifest.sources.map !== metadata.mapSource) {
     errors.push(issue(paths.world, "/mapSource", metadata.mapSource, "does not match manifest"));
   }
@@ -55,6 +60,7 @@ export function importProject(sources, paths = defaultPaths) {
       errors.push(issue(paths.world, pointer, name, `expects Tiled type '${type}'`));
     }
   }
+  if (campaign) validateCampaignReferences(campaign, paths.campaign, errors);
   if (errors.length > 0) return { valid: false, errors, world: null };
 
   const cell = (name) => objectCell(objects.get(name), map);
@@ -91,7 +97,8 @@ export function importProject(sources, paths = defaultPaths) {
         ...rectangle(metadata.transition.object),
         target: cell(metadata.transition.target)
       },
-      collisions
+      collisions,
+      campaign: campaign ? resolveCampaign(campaign) : null
     }
   };
 }
@@ -99,16 +106,22 @@ export function importProject(sources, paths = defaultPaths) {
 export async function loadProject(baseUrl = "/first-light/") {
   const manifestPath = `${baseUrl}project.lumen.json`;
   const manifest = await fetchJson(manifestPath);
-  const [map, world] = await Promise.all([
+  const [map, world, campaign] = await Promise.all([
     fetchJson(`${baseUrl}${manifest.sources.map}`),
-    fetchJson(`${baseUrl}${manifest.sources.world}`)
+    fetchJson(`${baseUrl}${manifest.sources.world}`),
+    manifest.sources.campaign
+      ? fetchJson(`${baseUrl}${manifest.sources.campaign}`)
+      : Promise.resolve(null)
   ]);
   return importProject(
-    { manifest, map, world },
+    { manifest, map, world, ...(campaign ? { campaign } : {}) },
     {
       manifest: manifestPath,
       map: `${baseUrl}${manifest.sources.map}`,
-      world: `${baseUrl}${manifest.sources.world}`
+      world: `${baseUrl}${manifest.sources.world}`,
+      campaign: manifest.sources.campaign
+        ? `${baseUrl}${manifest.sources.campaign}`
+        : "campaign.lumen.json"
     }
   );
 }
@@ -148,5 +161,82 @@ function objectRectangle(object, map) {
 const defaultPaths = {
   manifest: "project.lumen.json",
   map: "lantern-vale.tmj",
-  world: "world.lumen.json"
+  world: "world.lumen.json",
+  campaign: "campaign.lumen.json"
 };
+
+function validateCampaignReferences(campaign, source, errors) {
+  const unique = (items, kind) => {
+    const ids = new Set();
+    for (const item of items) {
+      if (ids.has(item.id))
+        errors.push(issue(source, `/${kind}/${item.id}`, item.id, "is duplicated"));
+      ids.add(item.id);
+    }
+    return ids;
+  };
+  const moveIds = unique(campaign.moves, "moves");
+  const creatureIds = unique(campaign.creatures, "creatures");
+  const nodeIds = unique(campaign.dialogue.nodes, "dialogue/nodes");
+  if (!nodeIds.has(campaign.dialogue.start))
+    errors.push(
+      issue(source, "/dialogue/start", campaign.dialogue.start, "references missing dialogue node")
+    );
+  for (const node of campaign.dialogue.nodes) {
+    for (const choice of node.choices) {
+      if (choice.next && !nodeIds.has(choice.next))
+        errors.push(
+          issue(
+            source,
+            `/dialogue/nodes/${node.id}/choices/${choice.id}/next`,
+            choice.next,
+            "references missing dialogue node"
+          )
+        );
+      if (choice.effect === "choose-companion" && !creatureIds.has(choice.creature))
+        errors.push(
+          issue(
+            source,
+            `/dialogue/nodes/${node.id}/choices/${choice.id}/creature`,
+            choice.creature,
+            "references missing creature"
+          )
+        );
+    }
+  }
+  for (const creature of campaign.creatures) {
+    for (const move of creature.moves) {
+      if (!moveIds.has(move))
+        errors.push(
+          issue(source, `/creatures/${creature.id}/moves`, move, "references missing move")
+        );
+    }
+  }
+  for (const starter of campaign.starters) {
+    if (!creatureIds.has(starter))
+      errors.push(issue(source, "/starters", starter, "references missing creature"));
+  }
+  if (!creatureIds.has(campaign.encounter.creature))
+    errors.push(
+      issue(
+        source,
+        "/encounter/creature",
+        campaign.encounter.creature,
+        "references missing creature"
+      )
+    );
+}
+
+function resolveCampaign(campaign) {
+  return {
+    ...structuredClone(campaign),
+    movesById: Object.fromEntries(campaign.moves.map((move) => [move.id, move])),
+    creaturesById: Object.fromEntries(
+      campaign.creatures.map((creature) => [creature.id, creature])
+    ),
+    dialogue: {
+      ...structuredClone(campaign.dialogue),
+      nodesById: Object.fromEntries(campaign.dialogue.nodes.map((node) => [node.id, node]))
+    }
+  };
+}

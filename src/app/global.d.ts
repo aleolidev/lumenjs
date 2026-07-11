@@ -2,8 +2,10 @@ interface Window {
   firstLight: {
     world: Record<string, unknown>;
     readonly state: FirstLightState;
+    readonly campaignState: Record<string, unknown>;
     diagnostics: FirstLightDiagnostics;
     dispatch(action: string): unknown;
+    campaignDispatch(action: Record<string, unknown>): unknown;
     settled(): Promise<void>;
   };
 }
@@ -24,6 +26,7 @@ interface FirstLightDiagnostics {
   input: string | null;
   simulation: {
     state: FirstLightState;
+    campaign: Record<string, unknown>;
     stateHash: string;
     recentFacts: Array<{ type: string; [key: string]: unknown }>;
   };

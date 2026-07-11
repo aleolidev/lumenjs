@@ -1,7 +1,6 @@
 # Phase 2 campaign-slice specification
 
-Status: approved for specification on 2026-07-11; implementation not yet
-authorized by this document.
+Status: implemented and locally validated on 2026-07-11.
 
 ## Product question
 

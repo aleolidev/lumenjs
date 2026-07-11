@@ -27,3 +27,16 @@ font or game asset is included.
 The fixture may be distributed under the same license eventually selected for
 LumenJS. Until that repository license is selected, this record establishes
 origin but does not grant a separate license.
+
+## Phase 2 campaign slice
+
+The names Embercub, Mossling, Glintail, their move names, creature statistics,
+dialogue, encounter rules, and campaign data were authored specifically for
+LumenJS on 2026-07-11. They do not adapt a protected game's creatures, moves,
+characters, story, terminology, or balance data.
+
+The Phase 2 playtest represents each creature with a small CSS-composed color
+mark derived from the two colors in its validated creature record. These marks
+were authored in `src/app/first-light.css`; they use no image, font, icon, or
+third-party asset. They are fixture presentation, not final creature designs or
+a general creature-art pipeline.

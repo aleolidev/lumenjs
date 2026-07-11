@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "dialogue": {
+    "start": "choose-companion",
+    "nodes": [
+      {
+        "id": "choose-companion",
+        "speaker": "Mira",
+        "text": "The beacon woke two little guardians. Which one will walk beside you?",
+        "choices": [
+          {
+            "id": "choose-embercub",
+            "label": "Embercub — quick and bright",
+            "effect": "choose-companion",
+            "creature": "embercub",
+            "next": "trail-warning"
+          },
+          {
+            "id": "choose-mossling",
+            "label": "Mossling — sturdy and calm",
+            "effect": "choose-companion",
+            "creature": "mossling",
+            "next": "trail-warning"
+          }
+        ]
+      },
+      {
+        "id": "trail-warning",
+        "speaker": "Mira",
+        "text": "A Glintail waits beyond the east trail. Listen to your companion and bring back its light.",
+        "choices": [{ "id": "close-warning", "label": "We are ready", "effect": "close-dialogue" }]
+      }
+    ]
+  },
+  "moves": [
+    { "id": "spark-step", "name": "Spark Step", "power": 7, "uses": 4 },
+    { "id": "warm-pounce", "name": "Warm Pounce", "power": 5, "uses": 6 },
+    { "id": "moss-guard", "name": "Moss Guard", "power": 4, "uses": 6 },
+    { "id": "root-tap", "name": "Root Tap", "power": 6, "uses": 4 },
+    { "id": "gleam-dart", "name": "Gleam Dart", "power": 5, "uses": 6 },
+    { "id": "tail-flash", "name": "Tail Flash", "power": 6, "uses": 4 }
+  ],
+  "creatures": [
+    {
+      "id": "embercub",
+      "name": "Embercub",
+      "health": 24,
+      "speed": 8,
+      "moves": ["spark-step", "warm-pounce"],
+      "colors": ["#f58b3d", "#ffe29a"]
+    },
+    {
+      "id": "mossling",
+      "name": "Mossling",
+      "health": 28,
+      "speed": 5,
+      "moves": ["moss-guard", "root-tap"],
+      "colors": ["#6fae68", "#d6e89a"]
+    },
+    {
+      "id": "glintail",
+      "name": "Glintail",
+      "health": 22,
+      "speed": 6,
+      "moves": ["gleam-dart", "tail-flash"],
+      "colors": ["#7c75d8", "#d8d2ff"]
+    }
+  ],
+  "starters": ["embercub", "mossling"],
+  "encounter": { "id": "east-glintail", "creature": "glintail", "recruitAfterVictory": true },
+  "inventory": { "sunberry": 1 }
+}

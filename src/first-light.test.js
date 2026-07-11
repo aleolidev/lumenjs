@@ -4,6 +4,11 @@ import test from "node:test";
 import { importProject } from "./project/import-project.js";
 import { buildScene } from "./scene/build-scene.js";
 import {
+  createCampaignState,
+  runCampaignReplay,
+  stepCampaign
+} from "./simulation/campaign-simulation.js";
+import {
   createInitialState,
   hashState,
   runReplay,
@@ -14,7 +19,8 @@ const fixture = new URL("../public/first-light/", import.meta.url);
 const sources = {
   manifest: await readJson("project.lumen.json"),
   map: await readJson("lantern-vale.tmj"),
-  world: await readJson("world.lumen.json")
+  world: await readJson("world.lumen.json"),
+  campaign: await readJson("campaign.lumen.json")
 };
 const imported = importProject(sources);
 if (!imported.valid || !imported.world) throw new Error(JSON.stringify(imported.errors));
@@ -25,6 +31,88 @@ test("imports the structurally and semantically valid creator sources", () => {
   assert.equal(world.map.id, "lantern-vale");
   assert.deepEqual(world.spawn, { x: 2, y: 7 });
   assert.equal(world.collisions.length, 3);
+  assert.equal(world.campaign.creatures.length, 3);
+});
+
+test("reports missing campaign dialogue and move references with source pointers", async () => {
+  const brokenDialogue = await readJson("campaign.broken-dialogue.lumen.json");
+  const dialogueResult = importProject({ ...sources, campaign: brokenDialogue });
+  assert.equal(dialogueResult.valid, false);
+  assert.deepEqual(dialogueResult.errors[0], {
+    source: "campaign.lumen.json",
+    pointer: "/dialogue/start",
+    objectId: "missing-node",
+    message: "references missing dialogue node"
+  });
+
+  const brokenMove = await readJson("campaign.broken-move.lumen.json");
+  const moveResult = importProject({ ...sources, campaign: brokenMove });
+  assert.equal(moveResult.valid, false);
+  assert.ok(moveResult.errors.some((error) => error.objectId === "missing-move"));
+});
+
+test("dialogue chooses a validated companion and closes back into the world", () => {
+  const state = createCampaignState(world);
+  state.world.player = { x: 4, y: 6, facing: "east" };
+  let result = stepCampaign(world, state, { type: "world", action: "interact" });
+  assert.equal(result.state.mode, "dialogue");
+  result = stepCampaign(world, result.state, {
+    type: "dialogue-choice",
+    choice: "choose-embercub"
+  });
+  assert.deepEqual(result.state.party, ["embercub"]);
+  result = stepCampaign(world, result.state, {
+    type: "dialogue-choice",
+    choice: "close-warning"
+  });
+  assert.equal(result.state.mode, "world");
+});
+
+test("battle rules explain item use, damage, victory, and recruitment", () => {
+  const state = createCampaignState(world);
+  state.party = ["embercub"];
+  state.world.player = { x: 13, y: 7, facing: "east" };
+  let result = stepCampaign(world, state, { type: "world", action: "move-east" });
+  assert.equal(result.state.mode, "battle");
+  result = stepCampaign(world, result.state, { type: "battle-item", item: "sunberry" });
+  assert.equal(result.state.inventory.sunberry, 0);
+  assert.ok(result.facts.some((fact) => fact.type === "item-used"));
+  for (let index = 0; index < 4; index += 1) {
+    result = stepCampaign(world, result.state, { type: "battle-move", move: "spark-step" });
+  }
+  assert.equal(result.state.mode, "result");
+  assert.equal(result.state.outcome, "victory");
+  assert.deepEqual(result.state.party, ["embercub", "glintail"]);
+  assert.ok(result.facts.some((fact) => fact.type === "creature-recruited"));
+  result = stepCampaign(world, result.state, { type: "continue-result" });
+  assert.equal(result.state.mode, "world");
+  assert.match(result.state.world.message, /Glintail/);
+});
+
+test("campaign replay reproduces world, dialogue, battle, facts, and hash", async () => {
+  const replay = await readJson("campaign-replay.json");
+  const first = runCampaignReplay(world, replay);
+  const second = runCampaignReplay(world, replay);
+  assert.deepEqual(first, second);
+  assert.equal(first.stateHash, replay.expectedStateHash);
+  assert.equal(first.state.mode, "world");
+  assert.equal(first.state.outcome, "victory");
+  assert.deepEqual(first.state.party, ["embercub", "glintail"]);
+  assert.ok(first.facts.some((fact) => fact.type === "battle-ended"));
+});
+
+test("slower companion can lose and the loss replay is deterministic", async () => {
+  const replay = await readJson("campaign-loss-replay.json");
+  const result = runCampaignReplay(world, replay);
+  assert.equal(result.stateHash, replay.expectedStateHash);
+  assert.equal(result.state.mode, "result");
+  assert.equal(result.state.outcome, "loss");
+  assert.deepEqual(result.state.party, ["mossling"]);
+  /** @type {any} */
+  const finalFact = result.facts.at(-1);
+  assert.ok(finalFact);
+  assert.equal(finalFact.type, "battle-ended");
+  assert.equal(finalFact.result, "loss");
 });
 
 test("reports source-linked structural errors before producing a world", () => {

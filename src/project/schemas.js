@@ -15,7 +15,8 @@ export const manifestSchema = {
       required: ["map", "world"],
       properties: {
         map: { type: "string", pattern: "^[^/]+\\.tmj$" },
-        world: { type: "string", pattern: "^[^/]+\\.lumen\\.json$" }
+        world: { type: "string", pattern: "^[^/]+\\.lumen\\.json$" },
+        campaign: { type: "string", pattern: "^[^/]+\\.lumen\\.json$" }
       }
     }
   },
@@ -100,6 +101,126 @@ export const worldSchema = {
       additionalProperties: false,
       required: ["object", "target"],
       properties: { object: reference, target: reference }
+    }
+  }
+};
+
+export const campaignSchema = {
+  $id: "https://lumenjs.dev/schema/first-light-campaign-v1.json",
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "schemaVersion",
+    "dialogue",
+    "moves",
+    "creatures",
+    "starters",
+    "encounter",
+    "inventory"
+  ],
+  properties: {
+    schemaVersion: { const: 1 },
+    dialogue: {
+      type: "object",
+      additionalProperties: false,
+      required: ["start", "nodes"],
+      properties: {
+        start: reference,
+        nodes: {
+          type: "array",
+          minItems: 1,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["id", "speaker", "text", "choices"],
+            properties: {
+              id: reference,
+              speaker: { type: "string", minLength: 1 },
+              text: { type: "string", minLength: 1 },
+              choices: {
+                type: "array",
+                minItems: 1,
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["id", "label", "effect"],
+                  properties: {
+                    id: reference,
+                    label: { type: "string", minLength: 1 },
+                    effect: { enum: ["choose-companion", "close-dialogue"] },
+                    creature: reference,
+                    next: reference
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    moves: {
+      type: "array",
+      minItems: 2,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "power", "uses"],
+        properties: {
+          id: reference,
+          name: { type: "string", minLength: 1 },
+          power: { type: "integer", minimum: 1 },
+          uses: { type: "integer", minimum: 1 }
+        }
+      }
+    },
+    creatures: {
+      type: "array",
+      minItems: 3,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "name", "health", "speed", "moves", "colors"],
+        properties: {
+          id: reference,
+          name: { type: "string", minLength: 1 },
+          health: { type: "integer", minimum: 1 },
+          speed: { type: "integer", minimum: 1 },
+          moves: {
+            type: "array",
+            minItems: 2,
+            maxItems: 2,
+            items: reference
+          },
+          colors: {
+            type: "array",
+            minItems: 2,
+            maxItems: 2,
+            items: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" }
+          }
+        }
+      }
+    },
+    starters: {
+      type: "array",
+      minItems: 2,
+      maxItems: 2,
+      items: reference
+    },
+    encounter: {
+      type: "object",
+      additionalProperties: false,
+      required: ["id", "creature", "recruitAfterVictory"],
+      properties: {
+        id: reference,
+        creature: reference,
+        recruitAfterVictory: { const: true }
+      }
+    },
+    inventory: {
+      type: "object",
+      additionalProperties: false,
+      required: ["sunberry"],
+      properties: { sunberry: { type: "integer", minimum: 1, maximum: 1 } }
     }
   }
 };

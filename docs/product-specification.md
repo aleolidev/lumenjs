@@ -1,7 +1,7 @@
 # Product specification direction
 
-Status: direction approved; First Light completed and its visual direction
-approved on 2026-07-11. Phase 2 is awaiting specification review.
+Status: direction approved; First Light and the focused Phase 2 campaign slice
+completed and locally validated on 2026-07-11.
 
 This document turns the capability inventory into delivery phases and proposes
 the first production-quality vertical prototype. It is a prioritization

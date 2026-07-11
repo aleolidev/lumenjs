@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "dialogue": {
+    "start": "only-node",
+    "nodes": [
+      {
+        "id": "only-node",
+        "speaker": "Mira",
+        "text": "Broken fixture.",
+        "choices": [{ "id": "close", "label": "Close", "effect": "close-dialogue" }]
+      }
+    ]
+  },
+  "moves": [
+    { "id": "move-one", "name": "One", "power": 1, "uses": 1 },
+    { "id": "move-two", "name": "Two", "power": 1, "uses": 1 }
+  ],
+  "creatures": [
+    {
+      "id": "creature-one",
+      "name": "One",
+      "health": 1,
+      "speed": 1,
+      "moves": ["missing-move", "move-two"],
+      "colors": ["#000000", "#ffffff"]
+    },
+    {
+      "id": "creature-two",
+      "name": "Two",
+      "health": 1,
+      "speed": 1,
+      "moves": ["move-one", "move-two"],
+      "colors": ["#000000", "#ffffff"]
+    },
+    {
+      "id": "creature-three",
+      "name": "Three",
+      "health": 1,
+      "speed": 1,
+      "moves": ["move-one", "move-two"],
+      "colors": ["#000000", "#ffffff"]
+    }
+  ],
+  "starters": ["creature-one", "creature-two"],
+  "encounter": {
+    "id": "broken-encounter",
+    "creature": "creature-three",
+    "recruitAfterVictory": true
+  },
+  "inventory": { "sunberry": 1 }
+}

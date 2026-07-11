@@ -9,7 +9,7 @@ test("loads validated First Light sources and reports renderer capability", asyn
   }));
   expect(result.project).toMatchObject({
     id: "first-light",
-    version: "0.1.0",
+    version: "0.2.0",
     schemaVersion: 1,
     mapId: "lantern-vale"
   });
@@ -40,7 +40,7 @@ test("switches optional visual grading without changing simulation state", async
   if (result.rendererStatus === "ready") expect(result.rendererMode).toBe("enhanced");
 });
 
-test("keyboard actions cross the explicit input and simulation boundary", async ({ page }) => {
+test("keyboard interaction opens validated companion dialogue", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-ready", "true");
   await page.keyboard.press("ArrowUp");
@@ -50,24 +50,66 @@ test("keyboard actions cross the explicit input and simulation boundary", async 
   await page.evaluate(() => window.firstLight.settled());
   const result = await page.evaluate(() => ({
     state: window.firstLight.state,
+    campaign: window.firstLight.campaignState,
     input: window.firstLight.diagnostics.input,
     facts: window.firstLight.diagnostics.simulation.recentFacts
   }));
   expect(result.state.flags["beacon-lit"]).toBe(true);
-  expect(result.input).toBe("interact");
-  expect(result.facts.map((fact) => fact.type)).toEqual(["flag-changed", "character-spoke"]);
-  await expect(page.locator("#message")).toContainText("beacon");
+  expect(result.input).toEqual({ type: "world", action: "interact" });
+  expect(result.campaign.mode).toBe("dialogue");
+  expect(result.facts.map((fact) => fact.type)).toEqual([
+    "flag-changed",
+    "character-spoke",
+    "dialogue-opened"
+  ]);
+  await expect(page.locator("#dialogue-panel")).toBeVisible();
+  await expect(page.locator("#dialogue-text")).toContainText("guardians");
 });
 
 test("canonical replay reaches its recorded state", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-ready", "true");
   await page.locator("#replay").click();
-  await expect(page.locator("#message")).toContainText("Replay complete");
+  await expect(page.locator("#message")).toContainText("Campaign replay complete");
   const result = await page.evaluate(() => window.firstLight.diagnostics.simulation);
   expect(result.stateHash).not.toContain("pending");
   expect(result.state.flags["beacon-lit"]).toBe(true);
   expect(result.state.transitions).toBe(1);
+  expect(result.campaign.outcome).toBe("victory");
+  expect(result.campaign.party).toEqual(["embercub", "glintail"]);
+});
+
+test("plays the visible dialogue and deterministic battle controls", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-ready", "true");
+  await page.evaluate(() => {
+    window.firstLight.dispatch("move-north");
+    window.firstLight.dispatch("move-east");
+    window.firstLight.dispatch("move-east");
+    window.firstLight.dispatch("interact");
+  });
+  await page.getByRole("button", { name: /Embercub/ }).click();
+  await page.getByRole("button", { name: "We are ready" }).click();
+  await page.evaluate(() => {
+    window.firstLight.dispatch("move-south");
+    for (let index = 0; index < 10; index += 1) window.firstLight.dispatch("move-east");
+  });
+  await expect(page.locator("#battle-panel")).toBeVisible();
+  await expect(page.locator("#ally-name")).toContainText("Embercub");
+  const beforeModeChange = await page.evaluate(() => window.firstLight.campaignState);
+  await page.locator("#visual-mode").click();
+  await page.evaluate(() => window.firstLight.settled());
+  expect(await page.evaluate(() => window.firstLight.campaignState)).toEqual(beforeModeChange);
+  for (let index = 0; index < 4; index += 1) {
+    await page.getByRole("button", { name: /Spark Step/ }).click();
+  }
+  await expect(page.locator("#result-panel")).toBeVisible();
+  await expect(page.locator("#result-title")).toContainText("Glintail");
+  const campaign = await page.evaluate(() => window.firstLight.campaignState);
+  expect(campaign.party).toEqual(["embercub", "glintail"]);
+  await page.getByRole("button", { name: "Return to Lantern Vale" }).click();
+  await expect(page.locator("#message")).toContainText("Glintail");
+  expect((await page.evaluate(() => window.firstLight.campaignState)).mode).toBe("world");
 });
 
 test("the playtest remains usable at a narrow touch viewport", async ({ page }) => {

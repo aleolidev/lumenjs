@@ -24,16 +24,44 @@
           <span>The project loaded, but this browser cannot render the playtest.</span>
         </div>
         <p id="message" class="message" aria-live="polite" hidden></p>
+        <section id="dialogue-panel" class="game-panel dialogue-panel" aria-label="Dialogue" hidden>
+          <p id="dialogue-speaker" class="panel-kicker"></p>
+          <h2 id="dialogue-text"></h2>
+          <div id="dialogue-choices" class="choice-grid"></div>
+        </section>
+        <section id="battle-panel" class="game-panel battle-panel" aria-label="Battle" hidden>
+          <div class="battle-stage">
+            <article class="creature-card opponent-card">
+              <div id="opponent-creature" class="creature-mark" aria-hidden="true"></div>
+              <p id="opponent-name"></p>
+              <meter id="opponent-health" min="0" max="1" value="1"></meter>
+            </article>
+            <p class="battle-versus">VS</p>
+            <article class="creature-card ally-card">
+              <div id="ally-creature" class="creature-mark" aria-hidden="true"></div>
+              <p id="ally-name"></p>
+              <meter id="ally-health" min="0" max="1" value="1"></meter>
+            </article>
+          </div>
+          <p id="battle-log" class="battle-log" aria-live="polite"></p>
+          <div id="battle-actions" class="choice-grid"></div>
+        </section>
+        <section id="result-panel" class="game-panel result-panel" aria-label="Battle result" hidden>
+          <p class="panel-kicker">Trail encounter complete</p>
+          <h2 id="result-title"></h2>
+          <p id="result-text"></p>
+          <button id="continue-result" type="button">Return to Lantern Vale</button>
+        </section>
       </section>
 
       <section class="controls" aria-label="Playtest controls">
         <div>
           <p><kbd>WASD</kbd> or <kbd>arrows</kbd> move · <kbd>Space</kbd> interacts</p>
-          <p>Speak to Mira, light the beacon, then find the east trail.</p>
+          <p>Speak to Mira, choose a companion, then find the east trail.</p>
         </div>
         <div class="control-buttons">
           <button id="visual-mode" type="button" aria-pressed="false">Visual mode: Classic</button>
-          <button id="replay" type="button">Run canonical replay</button>
+          <button id="replay" type="button">Run campaign replay</button>
         </div>
       </section>
 
