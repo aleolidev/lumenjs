@@ -366,10 +366,16 @@ function enterTransition(
 function validateSave(model: RuntimeModel, value: unknown): GameState {
   if (!isRecord(value) || value.format !== "lumen-game-save-v1-experimental")
     throw new TypeError("Save format is invalid");
+  requireExactKeys(value, ["format", "projectId", "projectVersion", "snapshot"], "save");
   if (value.projectId !== model.projectId || value.projectVersion !== model.projectVersion)
     throw new TypeError("Save belongs to a different project identity");
   if (!isRecord(value.snapshot)) throw new TypeError("Save snapshot is invalid");
   const snapshot = clone(value.snapshot as unknown as GameState);
+  requireExactKeys(
+    snapshot as unknown as Record<string, unknown>,
+    ["format", "tick", "locale", "activeMapId", "mapStates"],
+    "save snapshot"
+  );
   if (
     snapshot.format !== "lumen-game-state-v1-experimental" ||
     !Number.isInteger(snapshot.tick) ||
@@ -385,13 +391,16 @@ function validateSave(model: RuntimeModel, value: unknown): GameState {
     const map = model.mapsById[mapId];
     if (!map || !isRecord(mapState) || !isRecord(mapState.player))
       throw new TypeError("Save map state is invalid");
+    requireExactKeys(mapState, ["player", "message"], "save map state");
     const player = mapState.player;
+    requireExactKeys(player, ["x", "y", "facing"], "save player state");
+    const authoredMessages = new Set(Object.values(model.catalogs[snapshot.locale]));
     if (
       !Number.isInteger(player.x) ||
       !Number.isInteger(player.y) ||
       !Object.hasOwn(movement, String(player.facing)) ||
       !walkable(map, { x: Number(player.x), y: Number(player.y) }) ||
-      !(mapState.message === null || typeof mapState.message === "string")
+      !(mapState.message === null || authoredMessages.has(String(mapState.message)))
     )
       throw new TypeError("Save player state is invalid");
   }
@@ -424,6 +433,13 @@ function requireDocument<T>(documents: ProjectDocuments, path: string): T {
 
 function requireText(value: unknown, name: string): asserts value is string {
   if (typeof value !== "string" || value.length === 0) throw new TypeError(`${name} is required`);
+}
+
+function requireExactKeys(value: Record<string, unknown>, expected: string[], name: string) {
+  const actual = Object.keys(value).sort();
+  const allowed = [...expected].sort();
+  if (actual.length !== allowed.length || actual.some((key, index) => key !== allowed[index]))
+    throw new TypeError(`${name} has unexpected fields`);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

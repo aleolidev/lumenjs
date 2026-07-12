@@ -1,7 +1,7 @@
 {
   "name": "lumenjs",
   "version": "0.1.0",
-  "description": "Experimental JavaScript and WebGPU creator CLI for original creature-RPG projects",
+  "description": "Experimental TypeScript game core and creator CLI for original creature-RPG projects",
   "private": false,
   "license": "Apache-2.0",
   "keywords": [

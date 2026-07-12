@@ -1,6 +1,6 @@
 # Minimum TypeScript core specification
 
-Status: accepted implementation hypothesis, pending two-game migration evidence.
+Status: implemented and proven by the completion audit.
 
 ## Product slice
 
@@ -26,6 +26,7 @@ The initial public boundary is one TypeScript entry point:
 - `createGame(options)` creates an isolated game session;
 - `game.dispatch(action)` applies one synchronous deterministic action;
 - `game.getState()` returns an isolated snapshot;
+- `game.getMap()` returns an isolated render-facing map snapshot;
 - `game.createSave()` returns a project-bound portable value; and
 - `game.restoreSave(value)` validates identity and state before replacing the
   session state.
@@ -59,4 +60,3 @@ and source-linked diagnostic system.
 4. Cross-project and malformed saves are rejected without mutating live state.
 5. A clean packed-package consumer imports `lumenjs` without repository paths.
 6. Existing CLI, browser, and First Light checks remain green.
-

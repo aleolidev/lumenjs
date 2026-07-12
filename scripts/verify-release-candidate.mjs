@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -77,6 +77,27 @@ try {
     ],
     { cwd: consumerDirectory, env: quietNpmEnvironment(npmCache) }
   );
+  const typeConsumer = path.join(consumerDirectory, "consumer.mts");
+  await writeFile(
+    typeConsumer,
+    `import { createGame, type Game, type GameAction } from "lumenjs";\nconst action: GameAction = { type: "move", direction: "north" };\ndeclare const game: Game;\ngame.dispatch(action);\nvoid createGame;\n`
+  );
+  await execFileAsync(
+    process.execPath,
+    [
+      path.join(root, "node_modules", "typescript", "bin", "tsc"),
+      "--noEmit",
+      "--strict",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "--target",
+      "ES2024",
+      typeConsumer
+    ],
+    { cwd: consumerDirectory, env: quietNpmEnvironment(npmCache) }
+  );
 
   const cli = path.join(installedRoot, "bin", "lumen.js");
   const project = path.join(consumerDirectory, "clean-consumer");
@@ -93,7 +114,7 @@ try {
   await runCli(cli, ["verify-export", output], npmCache);
 
   process.stdout.write(
-    `Verified ${candidate.name}@${candidate.version}: ${candidate.entryCount} reproducible packed files (${firstHash}), clean library import, creator workflow, and export.\n`
+    `Verified ${candidate.name}@${candidate.version}: ${candidate.entryCount} reproducible packed files (${firstHash}), clean JavaScript/TypeScript imports, creator workflow, and export.\n`
   );
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });

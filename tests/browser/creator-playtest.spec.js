@@ -5,6 +5,7 @@ import { exportCreatorProject } from "../../src/creator/export-project.js";
 import { scaffoldCreatorProject } from "../../src/creator/scaffold-project.js";
 
 let output = "";
+let tideglassOutput = "";
 let secondOutput = "";
 let optionalOutput = "";
 let optionalProject = "";
@@ -13,8 +14,10 @@ let failedRegistrationOutput = "";
 
 test.beforeAll(async ({ browserName: _browserName }, workerInfo) => {
   output = path.resolve(`test-results/creator-export-${workerInfo.project.name}`);
+  tideglassOutput = path.resolve(`test-results/tideglass-export-${workerInfo.project.name}`);
   secondOutput = path.resolve(`test-results/creator-export-second-${workerInfo.project.name}`);
   await exportCreatorProject("examples/willowbound", output);
+  await exportCreatorProject("examples/tideglass-reach", tideglassOutput);
   await exportCreatorProject("examples/willowbound", secondOutput);
   optionalProject = path.resolve(
     `test-results/creator-project-optional-${workerInfo.project.name}`
@@ -45,11 +48,34 @@ test.beforeAll(async ({ browserName: _browserName }, workerInfo) => {
 
 test.afterAll(async () => {
   await rm(output, { recursive: true, force: true });
+  await rm(tideglassOutput, { recursive: true, force: true });
   await rm(secondOutput, { recursive: true, force: true });
   await rm(optionalOutput, { recursive: true, force: true });
   await rm(optionalProject, { recursive: true, force: true });
   await rm(failedInstallOutput, { recursive: true, force: true });
   await rm(failedRegistrationOutput, { recursive: true, force: true });
+});
+
+test("Tideglass Reach runs the same compiled core as a distinct web game", async ({ page }) => {
+  /** @type {string[]} */
+  const errors = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  await page.goto(
+    `/test-results/tideglass-export-${test.info().project.name}/index.html?map=tideglass-shore&spawn=crossing-start&locale=es`
+  );
+  await expect(page.locator("html")).toHaveAttribute("data-ready", "true");
+  await expect(page.locator("#playtest-status")).toContainText("tideglass-reach");
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Space");
+  await expect(page.locator("#playtest-message")).toContainText("cristal marino");
+  await page.keyboard.press("ArrowUp");
+  for (let index = 0; index < 4; index += 1) await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#playtest-status")).toContainText("signal-tower · es");
+  await expect(page.locator("#playtest-diagnostics")).toContainText("map-entered");
+  expect(errors).toEqual([]);
 });
 
 test("focused creator export is localized, inspectable, and crosses maps", async ({ page }) => {

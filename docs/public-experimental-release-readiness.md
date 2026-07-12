@@ -7,7 +7,7 @@ remains unpublished.
 
 - Project license: Apache-2.0.
 - Candidate product: the `lumen` creator CLI plus a minimum TypeScript core;
-  publication remains deferred until the core passes its two-game gates.
+  its two-game gates pass, while publication remains a separate owner decision.
 - Candidate package identity: `lumenjs@0.1.0`.
 - Candidate npm channel: `next`.
 - Public hosting: Cloudflare Pages at <https://lumenjs.pages.dev>.
@@ -22,14 +22,17 @@ availability check; npm does not reserve the name until an authorized publish.
 ## Locally provable release gates
 
 - The package carries `LICENSE`, Apache metadata, README, and third-party notices.
-- `npm run check:release` packs, installs, and exercises the CLI from a clean
-  temporary consumer without publishing.
+- `npm run check:release` packs and installs into a clean temporary consumer,
+  compiles a TypeScript import, imports from JavaScript, and exercises the CLI
+  without publishing.
 - The package exposes the `lumen` executable and one experimental ESM entry
   point with TypeScript declarations.
 - The manual release-candidate workflow has read-only repository permissions and
   uploads an unpublished tarball for seven days. It contains no registry token,
   OIDC permission, or `npm publish` command.
-- Willowbound and Tideglass Reach validate as distinct repository consumers.
+- Willowbound and Tideglass Reach run movement, localized interaction, map
+  transition, and save/restore as distinct core consumers; their static web
+  exports run the same compiled core in Chromium, Firefox, and WebKit.
 - The Vite build carries Cloudflare Pages headers into `dist`.
 
 ## Owner-connected gates

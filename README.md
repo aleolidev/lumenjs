@@ -2,9 +2,9 @@
 
 LumenJS is an Apache-2.0-licensed JavaScript and WebGPU platform being developed for
 creating polished, original creature-RPG fangames through an approachable
-modern workflow. The current `0.1.0` CLI candidate remains unpublished and
-experimental; its internal schemas and modules are not public compatibility
-contracts.
+modern workflow. The current `0.1.0` candidate remains unpublished and
+experimental. It contains the creator CLI and one minimum TypeScript game core;
+other internal schemas and modules are not public compatibility contracts.
 
 The repository currently contains **First Light** and its campaign-continuity
 slice. It turns external Tiled maps and Lumen-owned gameplay metadata into a
@@ -63,9 +63,41 @@ The main `ci` command also checks that the Cloudflare Pages build contains the
 declared headers, hashed entry assets, only regular files, and no environment,
 source-map, or Wrangler credential/configuration files.
 
-The production Vite output is prepared for Cloudflare Pages with `npm run build`
-and output directory `dist`. See `docs/cloudflare-pages-deployment.md`; no public
-hosting claim is made until the owner connects and verifies a real HTTPS origin.
+The production Vite output is deployed from protected `main` to Cloudflare Pages
+at <https://lumenjs.pages.dev>. See `docs/cloudflare-pages-deployment.md` for the
+verified core origin evidence and the extended hosting checks that remain.
+
+## Minimum TypeScript core
+
+The package exposes one experimental ESM entry point. It is intentionally small:
+it creates an isolated game session from validated creator-project documents,
+moves a player through bounded maps, handles localized character interaction and
+map transitions, and creates or restores a project-bound save.
+
+```ts
+import {
+  createGame,
+  type GameAction,
+  type ProjectDocuments,
+  type ProjectManifest
+} from "lumenjs";
+
+declare const manifest: ProjectManifest;
+const documents: ProjectDocuments = {
+  // JSON documents keyed by the paths declared in project.lumen.json
+};
+const game = createGame({ manifest, documents, focus: { locale: "en" } });
+const action: GameAction = { type: "move", direction: "north" };
+const result = game.dispatch(action);
+const save = game.createSave();
+```
+
+Applications choose how documents are read and how state is rendered. The core
+contains no filesystem, fetch, DOM, WebGPU, or mutable-global policy. Compiled
+JavaScript works without TypeScript; `.d.ts` declarations are included for typed
+consumers. Willowbound and Tideglass Reach exercise this same entry point as
+distinct games. First Light remains a specialized campaign and renderer consumer,
+not an excuse to expand the minimum API with battle or WebGPU contracts.
 
 ## Experimental creator tools
 

@@ -62,6 +62,16 @@ test("save validation rejects cross-project and malformed state without mutation
   malformed.snapshot.mapStates[malformed.snapshot.activeMapId].player.x = -1;
   assert.throws(() => tideglass.restoreSave(malformed), /Save player state is invalid/);
   assert.deepEqual(tideglass.getState(), before);
+
+  const forgedMessage = tideglass.createSave();
+  forgedMessage.snapshot.mapStates[forgedMessage.snapshot.activeMapId].message = "forged";
+  assert.throws(() => tideglass.restoreSave(forgedMessage), /Save player state is invalid/);
+  assert.deepEqual(tideglass.getState(), before);
+
+  const extraField = tideglass.createSave();
+  Object.assign(extraField.snapshot, { debug: true });
+  assert.throws(() => tideglass.restoreSave(extraField), /unexpected fields/);
+  assert.deepEqual(tideglass.getState(), before);
 });
 
 async function loadFixture(directory, locale) {
