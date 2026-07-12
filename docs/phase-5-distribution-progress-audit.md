@@ -34,7 +34,7 @@ The exact remaining inputs and evidence gates are listed in
 ## Verification baseline
 
 - formatting and type checking pass;
-- 211/211 Node tests pass;
+- 212/212 Node tests pass;
 - 81/81 portable browser tests pass across Chromium, Firefox, and WebKit;
 - the headed Chromium WebGPU gate passes;
 - the Vite production build and `git diff --check` pass;

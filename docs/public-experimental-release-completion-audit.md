@@ -15,7 +15,7 @@ project without declaring definitive engine modules.
 | 5 | Cloudflare Pages preparation | Vite `dist`, `public/_headers`, deployment guide, and `check:cloudflare` regular-file/asset/secret checks | Proven locally. |
 | 6 | Second validation project | Tideglass Reach has distinct project/map/creature identity; automated validate, Spanish focus, export, and received-export verification | Proven locally. |
 | 7 | No definitive modules | No library entry point; README, AGENTS, release policy, package audit, and inspection policy keep schemas/modules internal and experimental | Proven. |
-| 8 | Regression baseline | Formatting, type checks, 211 Node tests, build, Cloudflare check, 81 portable browser tests, and headed WebGPU test | Proven. |
+| 8 | Regression baseline | Formatting, type checks, 212 Node tests, build, Cloudflare check, 81 portable browser tests, and headed WebGPU test | Proven. |
 
 ## Measured candidate
 
