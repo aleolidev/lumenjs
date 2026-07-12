@@ -30,7 +30,7 @@ independent-project gates.
 | 17 | Forbidden architecture is guarded | Import graph rejects cross-layer production imports and cycles; deterministic layers reject Node/DOM/fetch/storage/ambient clock/RNG/mutable-global access | Proven for present static source. |
 | 18 | Publication and external gates preserved | Central TODO, Phase 6 exclusions, Phase 5 owner checklist | Proven by repository policy and absence of publication action in this work. |
 | 19 | Ordered next work exists | Matrix assignments and central Goals 7–20 | Proven; Goal 7 is the first post-Phase-6 implementation goal. |
-| 20 | Baseline verification remains reproducible | Commands and results below | Proven locally for the audited working tree; remote gates require the final pushed commit. |
+| 20 | Baseline verification remains reproducible | Commands and results below | Proven locally and remotely for the versioned baseline. |
 
 ## Verification record
 
@@ -46,11 +46,20 @@ independent-project gates.
 - `node --test src/architecture/architecture.test.js`: four tests passed for
   layer imports, acyclic/deterministic boundaries, exact taxonomy coverage, and
   Goals 7–20 assignment.
+- GitHub CI run `29191931738` passed for baseline commit `72a7a72` from a clean
+  checkout, including the locked install and portable browser matrix.
+- Cloudflare Pages rebuilt `main`; the public origin returned HTTPS 200 for the
+  root, hashed JavaScript, JSON, and TMJ sources with the expected MIME/security
+  headers. Its `index-CihrLr1B.js` and `index-D9U_CUGX.css` asset identities
+  matched the audited local production build.
 
 The browser, GPU, and tarball results exercised the exact runtime baseline.
 Phase 6 subsequently added documentation, the architecture manifest, and Node
 fitness tests without changing runtime/package behavior; the final Node gate
 includes those additions.
+
+The final audit-only commit changes no runtime, package, or production-build
+input. Its own GitHub CI result is recorded before this goal is closed.
 
 ## Decision
 

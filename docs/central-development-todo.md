@@ -86,7 +86,7 @@ they must become a coherent versioned baseline before Goal 6 begins.
 - [x] Review and integrate the current working tree as one intentional baseline,
   preserving the dialogue and encounter specifications, audits, and generated
   creator/export behavior.
-- [ ] Confirm the recorded clean consumer, Node, browser, headed-WebGPU,
+- [x] Confirm the recorded clean consumer, Node, browser, headed-WebGPU,
   package, export, provenance, vulnerability, GitHub CI, and hosting gates for
   that exact versioned baseline.
 - [x] Record whether these boundaries remain experimental preset facilities or
