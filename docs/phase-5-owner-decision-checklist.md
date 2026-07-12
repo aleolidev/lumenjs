@@ -2,8 +2,8 @@
 
 Status: updated on 2026-07-12 after approving Apache-2.0, npm as the package
 channel, and Cloudflare Pages as the hosting target. This document authorizes
-candidate preparation, not publication, deployment, compatibility promises,
-device claims, or operated services.
+candidate preparation and the explicitly approved Cloudflare deployment, not
+npm publication, compatibility promises, device claims, or operated services.
 
 The local distribution increments are tracked in
 `phase-5-distribution-progress-audit.md`. The following roadmap outcomes cannot
@@ -13,7 +13,7 @@ be completed from repository evidence alone.
 | --- | --- | --- |
 | LumenJS licensing | Apache-2.0 approved | Root license, package/lock metadata, notices, README, and dependency/content review are locally aligned |
 | Public package identity | `lumenjs@0.1.0` and `github.com/aleolidev/lumenjs` selected; no registry reservation yet | Registry ownership, Trusted Publishing after initial package bootstrap, clean consumer fixture, explicit approval, and rollback/deprecation plan |
-| Public static hosting | Cloudflare Pages selected; build and headers prepared without an account connection | HTTPS deployment proves MIME types, headers, relative navigation, service-worker scope, cache/update/offline behavior, rollback, and clean-origin recovery |
+| Public static hosting | Cloudflare Pages connected to protected `main`; GitHub access limited to `lumenjs`; core HTTPS origin checks passed | Generated-export service-worker scope, cache/update/offline behavior, rollback, clean-origin recovery, and broader browser matrix |
 | Installable PWA | Creator supplies owned/provenanced application icons and intended app metadata | Valid manifest, 192/512 icon pipeline, install/update tests on target browsers and devices |
 | Physical-device coverage | Owner funds and prioritizes OS/browser/device/input/audio tiers | Recorded real sessions for touch, viewport/safe area, gamepad/remapping, audio routing/interruption, storage/offline, WebGPU device-loss recovery, performance, and thermal/battery as applicable |
 | Assistive technology | Owner selects supported browser/OS/AT combinations | Keyboard and screen-reader sessions with findings and remediation; semantic emulation alone is insufficient |

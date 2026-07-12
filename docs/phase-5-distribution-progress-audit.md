@@ -19,7 +19,7 @@ The exact remaining inputs and evidence gates are listed in
 | Dependency provenance | Ajv direct notice plus resolved transitive snapshot | Proven as current inventory. |
 | Update behavior | Content-versioned/scoped caches; no forced activation | Proven on local static host in three engines. |
 | Offline behavior | Chromium offline fetch, Firefox reload, WebKit cache/control | Proven with engine qualifications. |
-| Public static hosting | Cloudflare Pages build and headers prepared; no connected origin | Missing deployment evidence. |
+| Public static hosting | Git integration limited to `lumenjs`; protected `main`; Node 22 build; HTTPS origin and live WebGPU First Light | Core deployment proven; extended offline/update/rollback evidence remains. |
 | PWA installation | No app manifest or creator-owned 192/512 icons | Deferred; not installable. |
 | Touch input | Three-engine taps/44px targets in creator export and First Light | Proven in emulation only. |
 | Audio, gamepad, and remapping | Deferred since the scoped Phase 2 decision; no runtime boundary or physical sessions | Not specified or authorized. |
@@ -27,7 +27,7 @@ The exact remaining inputs and evidence gates are listed in
 | Assistive technology | Local semantics/keyboard assertions only; no selected OS/browser/AT sessions | Missing external evidence. |
 | Compatibility visibility | Exact accepted source versions in `inspect` | Proven experimentally. |
 | Long-lived compatibility | No independent maintained project/support window | Not authorized. |
-| Public npm release | Apache-2.0 `lumenjs@0.1.0`; name was unclaimed at the recorded check; clean consumer workflow | Prepared locally; registry ownership, Git remote, Trusted Publishing, and approval remain. |
+| Public npm release | Apache-2.0 `lumenjs@0.1.0`; name was unclaimed at the recorded check; public Git remote; clean consumer workflow | Initial registry publication, Trusted Publishing, and approval remain. |
 | Authenticity/signing | Unsigned co-located hash manifest | Not authorized. |
 | Operated services | No funding/ownership/privacy/moderation/longevity model | Remain external. |
 
@@ -47,8 +47,8 @@ The exact remaining inputs and evidence gates are listed in
 ## Decision
 
 Phases 5A–5M and the local public-candidate preparation are complete as
-experimental increments. Phase 5 as a whole is not complete: connected public
-hosting, installability, real-device evidence, registry publication, public
+experimental increments. Phase 5 as a whole is not complete: extended hosting
+evidence, installability, real-device evidence, registry publication, public
 compatibility, and any service lifecycle remain unresolved.
 Continue only with internal safety, reproducibility, diagnostics, and evidence
 work that does not preempt those decisions.

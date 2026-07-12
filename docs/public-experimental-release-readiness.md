@@ -1,6 +1,7 @@
 # Public experimental release readiness
 
-Status: local candidate prepared; no package or site has been published.
+Status: public GitHub repository and Cloudflare Pages site deployed; npm package
+remains unpublished.
 
 ## Approved decisions
 
@@ -8,7 +9,7 @@ Status: local candidate prepared; no package or site has been published.
 - Candidate product: the `lumen` creator CLI, not a public engine library.
 - Candidate package identity: `lumenjs@0.1.0`.
 - Candidate npm channel: `next`.
-- Candidate hosting target: Cloudflare Pages.
+- Public hosting: Cloudflare Pages at <https://lumenjs.pages.dev>.
 - Internal schemas, context modules, runtime structure, and export formats stay
   experimental and carry no long-lived compatibility promise.
 
@@ -38,8 +39,10 @@ then approve the release. Because a brand-new npm package has no settings page,
 the initial `0.1.0` publication may require an owner-authenticated bootstrap;
 Trusted Publishing can govern later releases after the package exists.
 
-Before claiming Cloudflare support, the owner must connect the Git repository
-and the real origin must pass `cloudflare-pages-deployment.md`.
+Cloudflare Pages is connected to the protected `main` branch with GitHub access
+limited to `lumenjs`. The core HTTPS, security-header, asset, and First Light
+checks are recorded in `cloudflare-pages-deployment.md`; extended offline,
+update, rollback, and clean-origin evidence remains separate.
 
 Physical-device, assistive-technology, independent-project, compatibility-window,
 and operated-service gates remain separate. This candidate does not make those

@@ -32,7 +32,8 @@ test("Apache-2.0 candidate metadata is public while engine modules stay internal
   assert.match(license, /Apache License\s+Version 2\.0, January 2004/);
   assert.match(readiness, /not a public engine library/);
   assert.match(readiness, /no long-lived compatibility promise/);
-  assert.match(readiness, /no package or site has been published/);
+  assert.match(readiness, /npm package\s+remains unpublished/);
+  assert.match(readiness, /https:\/\/lumenjs\.pages\.dev/);
   const policy = await readFile(path.join(root, "docs/experimental-release-policy.md"), "utf8");
   assert.match(policy, /npm dist-tag `next`/);
   assert.match(policy, /no public engine\s+import, module API/);
@@ -75,16 +76,18 @@ test("npm publishing workflow is manual, exact, and contains no stored credentia
   }
 });
 
-test("Cloudflare Pages candidate is static, secret-free, and carries headers", async () => {
+test("Cloudflare Pages deployment is static, secret-free, and carries headers", async () => {
   const headers = await readFile(path.join(root, "public/_headers"), "utf8");
   const deployment = await readFile(path.join(root, "docs/cloudflare-pages-deployment.md"), "utf8");
   assert.match(headers, /X-Frame-Options: DENY/);
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Permissions-Policy:/);
+  assert.match(headers, /\/first-light\/\*\.tmj\s+Content-Type: application\/json/);
   assert.match(deployment, /Build command: `npm run build`/);
   assert.match(deployment, /Build output directory: `dist`/);
   assert.match(deployment, /Environment variables: none required/);
-  assert.match(deployment, /prepared target rather than a supported-hosting claim/);
+  assert.match(deployment, /https:\/\/lumenjs\.pages\.dev/);
+  assert.match(deployment, /Core connected hosting is proven/);
 });
 
 test("Willowbound and Tideglass Reach are distinct valid creator consumers", async () => {

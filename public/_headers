@@ -3,3 +3,6 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), geolocation=(), microphone=()
+
+/first-light/*.tmj
+  Content-Type: application/json; charset=utf-8
