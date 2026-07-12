@@ -40,9 +40,10 @@ The Cloudflare build completed successfully and the following checks passed:
 - the GitHub App installation was limited to `aleolidev/lumenjs`.
 
 The initial origin check found `.tmj` files served as
-`application/octet-stream`. The deployment configuration now declares them as
-`application/json; charset=utf-8`; the automatic deployment of this change must
-be checked before closing the hosting gate.
+`application/octet-stream`. Commit `bd3b572` declared them as
+`application/json; charset=utf-8`; automatic deployment
+`9f580e4b-fbef-4d4c-946b-c1a5d383298b` completed successfully and the public
+origin then returned the declared MIME type with HTTPS 200.
 
 ## Remaining extended hosting evidence
 
