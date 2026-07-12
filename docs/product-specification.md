@@ -12,6 +12,11 @@ This document turns the capability inventory into delivery phases and proposes
 the first production-quality vertical prototype. It is a prioritization
 document, not an engine architecture or public API specification.
 
+The ordered program beyond the experimental candidate is maintained in
+`docs/central-development-todo.md`. That central TODO is authoritative for
+selecting future implementation goals; this document preserves the rationale
+and evidence path for Phases 1–5.
+
 ## Current roadmap evidence
 
 | Phase | Current decision | Authoritative audit |

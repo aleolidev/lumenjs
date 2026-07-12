@@ -18,7 +18,8 @@
       "id": "oren",
       "object": "oren-guide",
       "name": "Sela",
-      "messageKey": "oren-welcome"
+      "messageKey": "oren-welcome",
+      "dialogue": "shore-welcome"
     }
   ],
   "transitions": [
@@ -28,5 +29,6 @@
       "targetMap": "signal-tower",
       "targetSpawn": "workshop-entry"
     }
-  ]
+  ],
+  "encounters": []
 }

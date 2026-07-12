@@ -5,6 +5,14 @@ const status = requiredElement("playtest-status");
 const mapView = requiredElement("map-view");
 const diagnostics = requiredElement("playtest-diagnostics");
 const message = requiredElement("playtest-message");
+const dialoguePanel = requiredElement("dialogue-panel");
+const dialogueSpeaker = requiredElement("dialogue-speaker");
+const dialogueChoices = requiredElement("dialogue-choices");
+const battlePanel = requiredElement("battle-panel");
+const battleStatus = requiredElement("battle-status");
+const battleHealth = requiredElement("battle-health");
+const battleActions = requiredElement("battle-actions");
+const battleFinish = requiredElement("battle-finish");
 
 try {
   const manifest = await fetchJson("project.lumen.json");
@@ -40,16 +48,18 @@ try {
   if (state.locale !== "inline") document.documentElement.lang = state.locale;
   let facts = [];
 
+  const actionButtons = [...document.querySelectorAll("[data-action]")];
   const dispatch = (action) => {
-    const result = game.dispatch(coreAction(action));
+    const result = game.dispatch(typeof action === "string" ? coreAction(action) : action);
     state = result.state;
     facts = result.facts;
     render();
   };
-  for (const button of document.querySelectorAll("[data-action]")) {
+  for (const button of actionButtons) {
     if (!(button instanceof HTMLElement)) continue;
     button.addEventListener("click", () => dispatch(button.dataset.action));
   }
+  battleFinish.addEventListener("click", () => dispatch({ type: "finish-battle" }));
   const keys = {
     ArrowUp: "move-north",
     ArrowDown: "move-south",
@@ -71,7 +81,9 @@ try {
       event.altKey ||
       event.shiftKey ||
       event.defaultPrevented ||
-      ownsKeyboardInput(event.target, event.code)
+      ownsKeyboardInput(event.target, event.code) ||
+      state.dialogue ||
+      state.battle
     )
       return;
     event.preventDefault();
@@ -87,13 +99,48 @@ try {
         for (let x = collision.x; x < collision.x + collision.width; x += 1)
           if (cells[y]?.[x]) cells[y][x] = "#";
     for (const transition of map.transitions) cells[transition.y][transition.x] = ">";
+    for (const encounter of map.encounters)
+      if (!state.completedEncounters.includes(encounter.encounterId))
+        cells[encounter.y][encounter.x] = "!";
     for (const character of map.characters) cells[character.y][character.x] = "C";
     cells[player.y][player.x] = "@";
     mapView.textContent = cells.map((row) => row.join(" ")).join("\n");
     status.textContent = `${game.projectId} · ${state.activeMapId} · ${state.locale}`;
     if (state.locale === "inline") message.removeAttribute("lang");
     else message.lang = state.locale;
-    message.textContent = state.mapStates[state.activeMapId].message ?? "";
+    message.textContent =
+      state.dialogue?.message ?? state.mapStates[state.activeMapId].message ?? "";
+    dialoguePanel.hidden = !state.dialogue;
+    dialogueSpeaker.textContent = state.dialogue?.speaker ?? "";
+    dialogueChoices.replaceChildren();
+    for (const choice of state.dialogue?.choices ?? []) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = choice.label;
+      button.dataset.choice = choice.id;
+      button.addEventListener("click", () => dispatch({ type: "choose", choiceId: choice.id }));
+      dialogueChoices.append(button);
+    }
+    battlePanel.hidden = !state.battle;
+    battleStatus.textContent = state.battle
+      ? `${state.battle.ally.name} versus ${state.battle.enemy.name} · ${state.battle.outcome}`
+      : "";
+    battleHealth.textContent = state.battle
+      ? `${state.battle.ally.name}: ${state.battle.ally.health}/${state.battle.ally.maxHealth} · ${state.battle.enemy.name}: ${state.battle.enemy.health}/${state.battle.enemy.maxHealth}`
+      : "";
+    battleActions.replaceChildren();
+    for (const move of state.battle?.ally.moves ?? []) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = `${move.name} · ${move.remainingUses}/${move.maxUses}`;
+      button.disabled = state.battle?.outcome !== "active" || move.remainingUses < 1;
+      button.addEventListener("click", () => dispatch({ type: "use-move", moveId: move.id }));
+      battleActions.append(button);
+    }
+    battleFinish.hidden = !state.battle || state.battle.outcome === "active";
+    for (const button of actionButtons)
+      if (button instanceof HTMLButtonElement)
+        button.disabled = Boolean(state.dialogue || state.battle);
     diagnostics.textContent = JSON.stringify(
       {
         state,

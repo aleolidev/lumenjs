@@ -36,6 +36,13 @@ Use paths and commit hashes as pointers. Never paste source files, specification
 
 Before saving, verify that a fresh Codex task can continue using the handoff plus the current repository.
 
+In LumenJS, also read `docs/central-development-todo.md` before writing. If the
+current or previously resumed goal is complete, align the next step with the
+first unblocked unchecked item in the active central goal. Record the central
+goal and checkbox as pointers; do not copy the roadmap into the handoff. Do not
+skip ahead or invent an isolated goal without recording the dependency or
+blocker that justifies it.
+
 After writing, return this prompt:
 
 ```text
@@ -50,5 +57,9 @@ Read the newest handoff for the selected task. Then:
 2. Inspect `git status`.
 3. Treat repository state as authoritative when it differs from the note.
 4. Continue from the recorded next step.
+
+For LumenJS, read `docs/central-development-todo.md` after the referenced files.
+Finish the handed-off goal first. When it is complete, continue with the first
+unblocked unchecked item in the active central goal.
 
 Never edit or delete old handoffs unless the user asks.

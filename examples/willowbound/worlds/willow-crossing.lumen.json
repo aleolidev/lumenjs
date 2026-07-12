@@ -18,7 +18,8 @@
       "id": "oren",
       "object": "oren-guide",
       "name": "Oren",
-      "messageKey": "oren-welcome"
+      "messageKey": "oren-welcome",
+      "dialogue": "crossing-welcome"
     }
   ],
   "transitions": [
@@ -28,5 +29,6 @@
       "targetMap": "starglass-workshop",
       "targetSpawn": "workshop-entry"
     }
-  ]
+  ],
+  "encounters": []
 }

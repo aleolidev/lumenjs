@@ -93,7 +93,8 @@ export const creatorWorldSchema = {
     "defaultSpawn",
     "spawns",
     "characters",
-    "transitions"
+    "transitions",
+    "encounters"
   ],
   properties: {
     schemaVersion: { const: 1 },
@@ -115,12 +116,13 @@ export const creatorWorldSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "object", "name", "messageKey"],
+        required: ["id", "object", "name", "messageKey", "dialogue"],
         properties: {
           id,
           object: id,
           name: visibleText,
-          messageKey: id
+          messageKey: id,
+          dialogue: id
         }
       }
     },
@@ -131,6 +133,15 @@ export const creatorWorldSchema = {
         additionalProperties: false,
         required: ["id", "object", "targetMap", "targetSpawn"],
         properties: { id, object: id, targetMap: id, targetSpawn: id }
+      }
+    },
+    encounters: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "object", "encounter"],
+        properties: { id, object: id, encounter: id }
       }
     }
   }

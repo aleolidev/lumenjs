@@ -1,6 +1,7 @@
 # Willowbound
 
-Experimental LumenJS creator project.
+Experimental LumenJS creator project. Its core route chooses an original
+companion and resolves the authored Prismole encounter in Starglass Workshop.
 
 Validate with `lumen validate .`.
 

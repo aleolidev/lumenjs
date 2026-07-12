@@ -17,5 +17,12 @@
       "targetMap": "tideglass-shore",
       "targetSpawn": "workshop-return"
     }
+  ],
+  "encounters": [
+    {
+      "id": "tower-beacon-mite-trigger",
+      "object": "tower-beacon-mite",
+      "encounter": "tower-beacon-mite"
+    }
   ]
 }

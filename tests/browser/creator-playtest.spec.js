@@ -71,10 +71,24 @@ test("Tideglass Reach runs the same compiled core as a distinct web game", async
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("Space");
   await expect(page.locator("#playtest-message")).toContainText("cristal marino");
+  await page.getByRole("button", { name: "Viajar con Gustling" }).click();
+  await expect(page.locator("#playtest-message")).toContainText("encenderemos la torre");
+  await expect(page.locator("#playtest-diagnostics")).toContainText('"gustling"');
+  await page
+    .getByRole("button", { name: "Cruzaremos la orilla y encenderemos la torre de señales." })
+    .click();
+  await expect(page.locator("#dialogue-panel")).toBeHidden();
   await page.keyboard.press("ArrowUp");
   for (let index = 0; index < 4; index += 1) await page.keyboard.press("ArrowRight");
   await expect(page.locator("#playtest-status")).toContainText("signal-tower · es");
   await expect(page.locator("#playtest-diagnostics")).toContainText("map-entered");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#battle-status")).toContainText("Gustling versus Beacon Mite");
+  for (let index = 0; index < 4; index += 1)
+    await page.getByRole("button", { name: /Skybound Hop/ }).click();
+  await expect(page.locator("#battle-status")).toContainText("victory");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.locator("#playtest-diagnostics")).toContainText("tower-beacon-mite");
   expect(errors).toEqual([]);
 });
 
@@ -155,12 +169,24 @@ test("focused creator export is localized, inspectable, and crosses maps", async
   await page.keyboard.press("Space");
   await expect(page.locator("#playtest-message")).toContainText("senderos de sauces");
   await expect(page.locator("#playtest-message")).toHaveAttribute("lang", "es");
+  await page.getByRole("button", { name: "Viajar con Bramblefin" }).click();
+  await expect(page.locator("#playtest-message")).toContainText("cristal estelar");
+  await expect(page.locator("#playtest-diagnostics")).toContainText('"bramblefin"');
+  await page.getByRole("button", { name: "Seguiremos el sendero de cristal estelar." }).click();
+  await expect(page.locator("#dialogue-panel")).toBeHidden();
   await page.keyboard.press("ArrowUp");
   for (let index = 0; index < 4; index += 1) await page.keyboard.press("ArrowRight");
   await expect(page.locator("#playtest-status")).toContainText("starglass-workshop · es");
   await expect(page.locator("#playtest-diagnostics")).toContainText("map-entered");
   await expect(page.locator("#playtest-diagnostics")).toContainText("workshop-atmosphere");
   await expect(page.locator("#playtest-diagnostics")).toContainText("careful-traveler");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#battle-status")).toContainText("Bramblefin versus Prismole");
+  for (let index = 0; index < 5; index += 1)
+    await page.getByRole("button", { name: /Reed Rush/ }).click();
+  await expect(page.locator("#battle-status")).toContainText("victory");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.locator("#battle-panel")).toBeHidden();
   await page.goto(
     `/test-results/creator-export-${test.info().project.name}/index.html?map=constructor`
   );
@@ -289,6 +315,40 @@ test("touch-capable narrow context taps the shared deterministic action boundary
     expect(box?.height).toBeGreaterThanOrEqual(44);
     await west.tap();
     await expect(page.locator("#playtest-diagnostics")).toContainText("movement-blocked");
+  } finally {
+    await context.close();
+  }
+});
+
+test("touch-capable narrow context can finish the shared encounter boundary", async ({
+  browser
+}) => {
+  test.skip(
+    test.info().project.name !== "chromium",
+    "One emulated touch encounter gate is sufficient"
+  );
+  const context = await browser.newContext({
+    hasTouch: true,
+    viewport: { width: 390, height: 844 }
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(`/test-results/creator-export-${test.info().project.name}/index.html`);
+    await page.getByRole("button", { name: "Move north" }).click();
+    await page.getByRole("button", { name: "Move east" }).click();
+    await page.getByRole("button", { name: "Interact" }).click();
+    await page.getByRole("button", { name: "Travel with Bramblefin" }).click();
+    await page.getByRole("button", { name: "We will follow the starglass trail." }).click();
+    await page.getByRole("button", { name: "Move north" }).click();
+    for (let index = 0; index < 5; index += 1)
+      await page.getByRole("button", { name: "Move east" }).click();
+    const move = page.getByRole("button", { name: /Reed Rush/ });
+    const box = await move.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    for (let index = 0; index < 5; index += 1) await move.tap();
+    await expect(page.locator("#battle-status")).toContainText("victory");
+    await page.getByRole("button", { name: "Continue" }).tap();
+    await expect(page.locator("#battle-panel")).toBeHidden();
   } finally {
     await context.close();
   }

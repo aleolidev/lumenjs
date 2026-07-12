@@ -2,6 +2,10 @@
 
 Audit date: 2026-07-12.
 
+Historical baseline: this audit remains evidence for the first core slice. Its
+dialogue exclusion was superseded by `minimum-dialogue-core-specification.md`
+after Willowbound and Tideglass Reach both proved the same narrower need.
+
 Scope: prove a small importable TypeScript core with two distinct original games
 before any npm publication. This audit does not approve publication or promote
 First Light's renderer, battle, campaign, persistence adapter, schemas, or
@@ -32,11 +36,11 @@ runtime result.
 
 ## Boundary decision
 
-First Light stays an internal specialized consumer. Migrating its campaign state
-would require adding dialogue, battle, creatures, generational storage, semantic
-scene construction, and WebGPU to a core whose two consumers do not need those
-contracts. Keeping First Light green proves coexistence; forcing it through this
-entry point would broaden the public surface without two-game evidence.
+First Light stays an internal specialized consumer. Migrating its full campaign
+state would require adding battle, generational storage, semantic scene
+construction, and WebGPU contracts that the two core consumers do not need.
+Dialogue was later reopened independently when both core consumers supplied
+direct evidence; that does not justify the rest of First Light's architecture.
 
 The achieved boundary is useful but experimental. npm remains unpublished. Any
 future publication still needs a fresh candidate audit and explicit owner

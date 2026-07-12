@@ -210,6 +210,7 @@ function validateSemantics(manifest, loaded, diagnostics) {
     const spawns = uniqueById(world.spawns, entry.world, "/spawns", diagnostics);
     uniqueById(world.characters, entry.world, "/characters", diagnostics);
     uniqueById(world.transitions, entry.world, "/transitions", diagnostics);
+    uniqueById(world.encounters, entry.world, "/encounters", diagnostics);
     if (!spawns.has(world.defaultSpawn)) {
       diagnostics.push(
         diagnostic("CREATOR_DEFAULT_SPAWN_MISSING", entry.world, "/defaultSpawn", {
@@ -222,7 +223,8 @@ function validateSemantics(manifest, loaded, diagnostics) {
     for (const [kind, items, expected] of [
       ["spawns", world.spawns, "spawn"],
       ["characters", world.characters, "character"],
-      ["transitions", world.transitions, "transition"]
+      ["transitions", world.transitions, "transition"],
+      ["encounters", world.encounters, "encounter"]
     ]) {
       for (const [itemIndex, item] of items.entries()) {
         validateObjectReference(
@@ -246,6 +248,8 @@ function validateSemantics(manifest, loaded, diagnostics) {
       entry,
       diagnostics
     );
+    validateDistinctTriggerCells(world.encounters, "encounters", objects, map, entry, diagnostics);
+    validateDistinctGameplayCells(world, objects, map, entry, diagnostics);
     worlds.set(entry.id, { entry, world, spawns });
   }
 
@@ -283,9 +287,15 @@ function validateSemantics(manifest, loaded, diagnostics) {
     }
   }
   const messages = validateLocalization(manifest, loaded, diagnostics);
+  const campaignReferences = validateCampaignReferences(
+    loaded[manifest.sources.campaign],
+    manifest.sources.campaign,
+    diagnostics,
+    messages
+  );
   for (const entry of manifest.sources.maps) {
     const world = loaded[entry.world];
-    for (const [index, character] of world.characters.entries())
+    for (const [index, character] of world.characters.entries()) {
       validateMessage(
         messages,
         entry.world,
@@ -293,14 +303,58 @@ function validateSemantics(manifest, loaded, diagnostics) {
         character.messageKey,
         diagnostics
       );
+      if (!campaignReferences.nodes.has(character.dialogue))
+        diagnostics.push(
+          referenceDiagnostic(
+            "CREATOR_DIALOGUE_NODE_MISSING",
+            entry.world,
+            `/characters/${index}/dialogue`,
+            character.dialogue,
+            "/dialogue/nodes"
+          )
+        );
+    }
+    for (const [index, encounter] of world.encounters.entries()) {
+      if (!campaignReferences.encounters.has(encounter.encounter))
+        diagnostics.push(
+          referenceDiagnostic(
+            "CREATOR_ENCOUNTER_MISSING",
+            entry.world,
+            `/encounters/${index}/encounter`,
+            encounter.encounter,
+            "/encounters"
+          )
+        );
+    }
   }
-  validateCampaignReferences(
-    loaded[manifest.sources.campaign],
-    manifest.sources.campaign,
-    diagnostics,
-    messages
-  );
   return validateContextModules(manifest, loaded, diagnostics);
+}
+
+function validateDistinctGameplayCells(world, objects, map, entry, diagnostics) {
+  const cells = new Map();
+  for (const [kind, items] of [
+    ["spawns", world.spawns],
+    ["characters", world.characters],
+    ["transitions", world.transitions],
+    ["encounters", world.encounters]
+  ]) {
+    for (const [index, item] of items.entries()) {
+      const object = objects.get(item.object);
+      if (!object) continue;
+      const cell = `${Math.floor(object.x / map.tilewidth)},${Math.floor(object.y / map.tileheight)}`;
+      const previous = cells.get(cell);
+      if (previous)
+        diagnostics.push(
+          diagnostic("CREATOR_GAMEPLAY_CELL_AMBIGUOUS", entry.world, `/${kind}/${index}/object`, {
+            value: item.id,
+            message: "Authored gameplay objects share one map cell.",
+            remedy: "Move each spawn, character, transition, and encounter to a distinct cell.",
+            related: { source: entry.world, pointer: previous }
+          })
+        );
+      else cells.set(cell, `/${kind}/${index}/object`);
+    }
+  }
 }
 
 function validateDistinctTriggerCells(items, kind, objects, map, entry, diagnostics) {
@@ -649,6 +703,7 @@ function validateCampaignReferences(campaign, source, diagnostics, messages) {
   }
   void trainers;
   void quests;
+  return { nodes, encounters };
 }
 
 function validateMessage(messages, source, pointer, value, diagnostics) {
@@ -722,25 +777,25 @@ function validateObjectReference(objects, name, expected, map, entry, kind, inde
       })
     );
   } else if (
-    ["spawn", "transition"].includes(expected) &&
+    ["spawn", "transition", "encounter"].includes(expected) &&
     objectCellCollides(object, objects, map)
   ) {
     diagnostics.push(
       diagnostic(`CREATOR_${expected.toUpperCase()}_COLLISION`, entry.world, pointer, {
         value: name,
-        message: `${expected === "spawn" ? "Spawn" : "Transition"} '${name}' is inside authored collision.`,
+        message: `Referenced ${expected} '${name}' is inside authored collision.`,
         remedy: `Move the ${expected} to a walkable map cell.`,
         related: { source: entry.map, pointer: `/objects/${name}` }
       })
     );
   } else if (
-    ["spawn", "transition"].includes(expected) &&
+    ["spawn", "transition", "encounter"].includes(expected) &&
     objectCellOccupied(object, objects, map)
   ) {
     diagnostics.push(
       diagnostic(`CREATOR_${expected.toUpperCase()}_OCCUPIED`, entry.world, pointer, {
         value: name,
-        message: `${expected === "spawn" ? "Spawn" : "Transition"} '${name}' shares a character cell.`,
+        message: `Referenced ${expected} '${name}' shares a character cell.`,
         remedy: `Move the ${expected} to an unoccupied walkable map cell.`,
         related: { source: entry.map, pointer: `/objects/${name}` }
       })

@@ -27,6 +27,12 @@ physical-device coverage, promise compatibility, or introduce operated services
 without the recorded decisions and evidence in
 `docs/phase-5-owner-decision-checklist.md`.
 
+The authoritative post-candidate program is
+`docs/central-development-todo.md`. After closing already-active work, select
+and complete goals in that document in dependency order. Do not substitute
+isolated convenience features for the active central goal, and do not declare
+Essentials-class readiness until its destination evidence is complete.
+
 Existing runtime structure remains internal and research-driven. Do not expand
 it into a public engine architecture or compatibility contract without new
 multi-project evidence.

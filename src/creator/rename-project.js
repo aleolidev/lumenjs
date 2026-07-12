@@ -198,6 +198,9 @@ function transform(project, options) {
     }
     for (const [index, quest] of campaign.quests.entries())
       change(campaignSource, `/quests/${index}/startsAt`, quest, "startsAt", options.to);
+    for (const { source, value } of worlds)
+      for (const [index, character] of value.characters.entries())
+        change(source, `/characters/${index}/dialogue`, character, "dialogue", options.to);
   } else if (options.kind === "encounter") {
     const definitions = campaign.encounters.filter((item) => item.id === options.from);
     requireSingleDefinition(
@@ -211,6 +214,9 @@ function transform(project, options) {
       change(campaignSource, `/trainers/${index}/encounter`, trainer, "encounter", options.to);
     for (const [index, quest] of campaign.quests.entries())
       change(campaignSource, `/quests/${index}/completesAt`, quest, "completesAt", options.to);
+    for (const { source, value } of worlds)
+      for (const [index, encounter] of value.encounters.entries())
+        change(source, `/encounters/${index}/encounter`, encounter, "encounter", options.to);
   } else if (options.kind === "message") {
     const config = manifest.sources.locales;
     if (!config)

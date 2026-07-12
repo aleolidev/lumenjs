@@ -113,7 +113,8 @@ function templateFiles(title, projectId) {
   ];
   const workshopObjects = [
     tiledObject(1, "workshop-entry", "spawn", 64, 128),
-    tiledObject(2, "crossing-door", "transition", 64, 160)
+    tiledObject(2, "crossing-door", "transition", 64, 160),
+    tiledObject(3, "workshop-prismole", "encounter", 96, 128)
   ];
   const crossingWorld = {
     schemaVersion: 1,
@@ -124,7 +125,15 @@ function templateFiles(title, projectId) {
       { id: "crossing-start", object: "crossing-start" },
       { id: "workshop-return", object: "workshop-return" }
     ],
-    characters: [{ id: "oren", object: "oren-guide", name: "Oren", messageKey: "oren-welcome" }],
+    characters: [
+      {
+        id: "oren",
+        object: "oren-guide",
+        name: "Oren",
+        messageKey: "oren-welcome",
+        dialogue: "crossing-welcome"
+      }
+    ],
     transitions: [
       {
         id: "enter-workshop",
@@ -132,7 +141,8 @@ function templateFiles(title, projectId) {
         targetMap: "starglass-workshop",
         targetSpawn: "workshop-entry"
       }
-    ]
+    ],
+    encounters: []
   };
   const workshopWorld = {
     schemaVersion: 1,
@@ -147,6 +157,13 @@ function templateFiles(title, projectId) {
         object: "crossing-door",
         targetMap: "willow-crossing",
         targetSpawn: "workshop-return"
+      }
+    ],
+    encounters: [
+      {
+        id: "workshop-prismole-trigger",
+        object: "workshop-prismole",
+        encounter: "workshop-prismole"
       }
     ]
   };
@@ -246,7 +263,7 @@ function templateFiles(title, projectId) {
     }),
     ".gitignore":
       "# Local Lumen creator recovery and temporary files.\n/.lumen/\n*.lumen-rename-*\n/.lumen-restore-files-*\n",
-    "README.md": `# ${title}\n\nExperimental LumenJS creator project.\n\nValidate with \`lumen validate .\`.\n\nLocal recovery generations under \`.lumen/\` are ignored by Git; use \`lumen backups .\` to inspect them.\n`,
+    "README.md": `# ${title}\n\nExperimental LumenJS creator project. Its core route chooses an original\ncompanion and resolves the authored Prismole encounter in Starglass Workshop.\n\nValidate with \`lumen validate .\`.\n\nLocal recovery generations under \`.lumen/\` are ignored by Git; use \`lumen backups .\` to inspect them.\n`,
     "PROVENANCE.md": `# ${title} provenance\n\nRecord the source, license, and adaptations for every external asset or reference.\n\nThe scaffold prose and placeholder geometry were created for LumenJS.\n`
   };
 }

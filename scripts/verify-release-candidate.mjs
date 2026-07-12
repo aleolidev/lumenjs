@@ -80,7 +80,7 @@ try {
   const typeConsumer = path.join(consumerDirectory, "consumer.mts");
   await writeFile(
     typeConsumer,
-    `import { createGame, type Game, type GameAction } from "lumenjs";\nconst action: GameAction = { type: "move", direction: "north" };\ndeclare const game: Game;\ngame.dispatch(action);\nvoid createGame;\n`
+    `import { createGame, type Game, type GameAction } from "lumenjs";\nconst action: GameAction = { type: "move", direction: "north" };\nconst choice: GameAction = { type: "choose", choiceId: "starter" };\nconst battle: GameAction = { type: "use-move", moveId: "tackle" };\ndeclare const game: Game;\ngame.dispatch(action);\ngame.dispatch(choice);\ngame.dispatch(battle);\nconst party: string[] = game.getState().party;\nconst outcome = game.getState().battle?.outcome;\nvoid party;\nvoid outcome;\nvoid createGame;\n`
   );
   await execFileAsync(
     process.execPath,

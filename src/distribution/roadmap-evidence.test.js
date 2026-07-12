@@ -38,8 +38,8 @@ test("every numbered roadmap criterion has an explicit completion-audit row", as
     }
   }
 
-  assert.equal(pairs.length, 23);
-  assert.equal(mapped, 302);
+  assert.equal(pairs.length, 24);
+  assert.equal(mapped, 310);
 });
 
 function comparePair(left, right) {

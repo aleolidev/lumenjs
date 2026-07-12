@@ -1,6 +1,7 @@
 # Minimum TypeScript core specification
 
-Status: implemented and proven by the completion audit.
+Status: implemented baseline, later extended by
+`minimum-dialogue-core-specification.md` from new two-game evidence.
 
 ## Product slice
 

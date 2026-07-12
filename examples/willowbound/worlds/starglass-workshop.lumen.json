@@ -17,5 +17,12 @@
       "targetMap": "willow-crossing",
       "targetSpawn": "workshop-return"
     }
+  ],
+  "encounters": [
+    {
+      "id": "workshop-prismole-trigger",
+      "object": "workshop-prismole",
+      "encounter": "workshop-prismole"
+    }
   ]
 }

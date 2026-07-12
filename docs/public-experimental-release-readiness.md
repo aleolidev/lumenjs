@@ -30,9 +30,10 @@ availability check; npm does not reserve the name until an authorized publish.
 - The manual release-candidate workflow has read-only repository permissions and
   uploads an unpublished tarball for seven days. It contains no registry token,
   OIDC permission, or `npm publish` command.
-- Willowbound and Tideglass Reach run movement, localized interaction, map
-  transition, and save/restore as distinct core consumers; their static web
-  exports run the same compiled core in Chromium, Firefox, and WebKit.
+- Willowbound and Tideglass Reach run movement, localized dialogue, distinct
+  companion choices, deterministic encounters, map transition, and save/restore
+  as separate core consumers; their static web exports run the same compiled
+  core in Chromium, Firefox, and WebKit.
 - The Vite build carries Cloudflare Pages headers into `dist`.
 
 ## Owner-connected gates

@@ -2,7 +2,9 @@
 
 Second experimental LumenJS consumer. It deliberately uses a separate project
 identity, map IDs, creature IDs, prose, and deployment cache namespace from
-Willowbound while exercising the same unpublished CLI contract.
+Willowbound while exercising the same unpublished CLI and TypeScript-core
+contracts. Its distinct route chooses a companion and resolves Beacon Mite in
+the Signal Tower.
 
 Validate with `lumen validate .`.
 

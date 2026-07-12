@@ -72,7 +72,8 @@ verified core origin evidence and the extended hosting checks that remain.
 The package exposes one experimental ESM entry point. It is intentionally small:
 it creates an isolated game session from validated creator-project documents,
 moves a player through bounded maps, handles localized character interaction and
-map transitions, and creates or restores a project-bound save.
+small dialogue choices with one selected companion, resolves a fixed deterministic
+encounter, follows map transitions, and creates or restores a project-bound save.
 
 ```ts
 import {
@@ -89,6 +90,11 @@ const documents: ProjectDocuments = {
 const game = createGame({ manifest, documents, focus: { locale: "en" } });
 const action: GameAction = { type: "move", direction: "north" };
 const result = game.dispatch(action);
+// After interacting with a dialogue-bound character:
+game.dispatch({ type: "choose", choiceId: "take-bramblefin" });
+const party = game.getState().party;
+// After entering an authored encounter trigger:
+game.dispatch({ type: "use-move", moveId: "reed-rush" });
 const save = game.createSave();
 ```
 
@@ -96,8 +102,10 @@ Applications choose how documents are read and how state is rendered. The core
 contains no filesystem, fetch, DOM, WebGPU, or mutable-global policy. Compiled
 JavaScript works without TypeScript; `.d.ts` declarations are included for typed
 consumers. Willowbound and Tideglass Reach exercise this same entry point as
-distinct games. First Light remains a specialized campaign and renderer consumer,
-not an excuse to expand the minimum API with battle or WebGPU contracts.
+distinct games, including localized dialogue, companion choices, and separate
+deterministic encounters. First Light remains a specialized campaign and
+renderer consumer, not an excuse to add inventory, recruitment, general events,
+or WebGPU contracts to the core.
 
 ## Experimental creator tools
 

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "layers": {
+    "core": { "roots": ["src/core"], "allow": [] },
+    "project": { "roots": ["src/project"], "allow": ["project"] },
+    "simulation": { "roots": ["src/simulation"], "allow": ["simulation"] },
+    "modules": { "roots": ["src/modules"], "allow": ["modules"] },
+    "persistence": { "roots": ["src/persistence"], "allow": ["persistence"] },
+    "render": { "roots": ["src/render"], "allow": ["render"] },
+    "scene": { "roots": ["src/scene"], "allow": ["scene"] },
+    "creator": {
+      "roots": ["src/creator"],
+      "allow": ["creator", "modules", "project"]
+    },
+    "app": {
+      "roots": ["src/app"],
+      "allow": ["app", "persistence", "project", "render", "scene", "simulation"]
+    }
+  },
+  "ignoredProductionFiles": ["src/creator/lumen-core.js", "src/creator/playtest-browser.js"]
+}

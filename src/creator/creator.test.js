@@ -706,6 +706,14 @@ test("locale catalogs validate completeness, exclusivity, and default ownership"
       "CREATOR_MESSAGE_MISSING"
     ],
     [
+      "character dialogue reference",
+      async (project) =>
+        mutateJson(project, "worlds/willow-crossing.lumen.json", (value) => {
+          value.characters[0].dialogue = "missing-dialogue";
+        }),
+      "CREATOR_DIALOGUE_NODE_MISSING"
+    ],
+    [
       "shared locale source",
       async (project) =>
         mutateJson(project, "project.lumen.json", (value) => {
@@ -814,6 +822,66 @@ test("trainer and quest authoring resolves every semantic reference", async (con
   }
 });
 
+test("world encounter triggers validate references, Tiled type, and distinct cells", async (context) => {
+  await context.test("missing campaign encounter", async () => {
+    await withProject(async (project) => {
+      await mutateJson(project, "worlds/starglass-workshop.lumen.json", (value) => {
+        value.encounters[0].encounter = "missing-encounter";
+      });
+      const result = await validateCreatorProject(project);
+      assert.ok(result.diagnostics.some((item) => item.code === "CREATOR_ENCOUNTER_MISSING"));
+    });
+  });
+  await context.test("wrong Tiled encounter type", async () => {
+    await withProject(async (project) => {
+      await mutateJson(project, "maps/starglass-workshop.tmj", (value) => {
+        value.layers[1].objects.find((item) => item.name === "workshop-prismole").type =
+          "transition";
+      });
+      const result = await validateCreatorProject(project);
+      assert.ok(result.diagnostics.some((item) => item.code === "CREATOR_TILED_OBJECT_TYPE"));
+    });
+  });
+  await context.test("encounter sharing spawn cell", async () => {
+    await withProject(async (project) => {
+      await mutateJson(project, "maps/starglass-workshop.tmj", (value) => {
+        const encounter = value.layers[1].objects.find((item) => item.name === "workshop-prismole");
+        encounter.x = 64;
+      });
+      const result = await validateCreatorProject(project);
+      assert.ok(result.diagnostics.some((item) => item.code === "CREATOR_GAMEPLAY_CELL_AMBIGUOUS"));
+    });
+  });
+  await context.test("encounter outside map bounds", async () => {
+    await withProject(async (project) => {
+      await mutateJson(project, "maps/starglass-workshop.tmj", (value) => {
+        value.layers[1].objects.find((item) => item.name === "workshop-prismole").x = 192;
+      });
+      const result = await validateCreatorProject(project);
+      assert.ok(
+        result.diagnostics.some((item) => item.code === "CREATOR_TILED_OBJECT_OUT_OF_BOUNDS")
+      );
+    });
+  });
+  await context.test("encounter inside collision", async () => {
+    await withProject(async (project) => {
+      await mutateJson(project, "maps/starglass-workshop.tmj", (value) => {
+        value.layers[1].objects.push({
+          id: 4,
+          name: "encounter-wall",
+          type: "collision",
+          x: 96,
+          y: 128,
+          width: 32,
+          height: 32
+        });
+      });
+      const result = await validateCreatorProject(project);
+      assert.ok(result.diagnostics.some((item) => item.code === "CREATOR_ENCOUNTER_COLLISION"));
+    });
+  });
+});
+
 test("dialogue authoring rejects ambiguous, disconnected, trapped, and conflicting graphs", async (context) => {
   /** @type {Array<[string, (value: any) => void, string]>} */
   const cases = [
@@ -871,7 +939,12 @@ test("rename previews and applies every supported reference kind with immutable 
     ],
     ["creature", { kind: "creature", from: "bramblefin", to: "bramblewing" }, 3],
     ["dialogue", { kind: "dialogue", from: "trail-ready", to: "trail-prepared" }, 4],
-    ["encounter", { kind: "encounter", from: "workshop-prismole", to: "studio-prismole" }, 3],
+    [
+      "dialogue-character",
+      { kind: "dialogue", from: "crossing-welcome", to: "crossing-greeting" },
+      3
+    ],
+    ["encounter", { kind: "encounter", from: "workshop-prismole", to: "studio-prismole" }, 4],
     ["message", { kind: "message", from: "ready-response", to: "trail-response" }, 4],
     ["message-character", { kind: "message", from: "oren-welcome", to: "oren-greeting" }, 4]
   ];
