@@ -46,7 +46,7 @@ approval; this completion audit is technical evidence, not that approval.
 
 The clean verifier selected 25 files and produced repeated byte-identical
 tarballs with SHA-256
-`248ad9bc705632762a5765a9788cade77c48f7cfc3c5fd8f2294bf30794989da`.
+`370004016fc3d523d7a88c8e79857a9d17f9bfa75863c02f1c8f70a58d8af954`.
 The production dependency audit reported zero known vulnerabilities. Registry
 verification reported signatures for 32 packages and attestations for 14; these
 dependency facts do not sign or publish LumenJS itself.
