@@ -1,10 +1,5 @@
 import { resolveEncounterContext } from "../modules/resolve-context.js";
-import {
-  buildCreatorPlaytestModel,
-  createFocusedPlaytestState,
-  hashCreatorPlaytestState,
-  stepCreatorPlaytest
-} from "./playtest-simulation.js";
+import { createGame } from "./lumen-core.js";
 
 const status = requiredElement("playtest-status");
 const mapView = requiredElement("map-view");
@@ -30,18 +25,23 @@ try {
     if (document)
       contributions.push({ module: entry.id, source: entry.source, values: document.values });
   }
-  const model = buildCreatorPlaytestModel(manifest, loaded, resolveEncounterContext(contributions));
+  const context = resolveEncounterContext(contributions);
   const query = new URLSearchParams(location.search);
-  let state = createFocusedPlaytestState(model, {
-    map: query.get("map") || undefined,
-    spawn: query.get("spawn") || undefined,
-    locale: query.get("locale") || undefined
+  const game = createGame({
+    manifest,
+    documents: loaded,
+    focus: {
+      map: query.get("map") || undefined,
+      spawn: query.get("spawn") || undefined,
+      locale: query.get("locale") || undefined
+    }
   });
+  let state = game.getState();
   if (state.locale !== "inline") document.documentElement.lang = state.locale;
   let facts = [];
 
   const dispatch = (action) => {
-    const result = stepCreatorPlaytest(model, state, action);
+    const result = game.dispatch(coreAction(action));
     state = result.state;
     facts = result.facts;
     render();
@@ -79,7 +79,7 @@ try {
   });
 
   function render() {
-    const map = model.mapsById[state.activeMapId];
+    const map = game.getMap();
     const player = state.mapStates[state.activeMapId].player;
     const cells = Array.from({ length: map.height }, () => Array(map.width).fill("·"));
     for (const collision of map.collisions)
@@ -90,15 +90,14 @@ try {
     for (const character of map.characters) cells[character.y][character.x] = "C";
     cells[player.y][player.x] = "@";
     mapView.textContent = cells.map((row) => row.join(" ")).join("\n");
-    status.textContent = `${model.projectId} · ${state.activeMapId} · ${state.locale}`;
+    status.textContent = `${game.projectId} · ${state.activeMapId} · ${state.locale}`;
     if (state.locale === "inline") message.removeAttribute("lang");
     else message.lang = state.locale;
     message.textContent = state.mapStates[state.activeMapId].message ?? "";
     diagnostics.textContent = JSON.stringify(
       {
         state,
-        stateHash: hashCreatorPlaytestState(state),
-        context: model.context,
+        context,
         recentFacts: facts
       },
       null,
@@ -111,6 +110,21 @@ try {
 } catch (error) {
   status.textContent = error instanceof Error ? error.message : String(error);
   document.documentElement.dataset.ready = "error";
+}
+
+/**
+ * @param {string} action
+ * @returns {import("../../dist-package/index.js").GameAction}
+ */
+function coreAction(action) {
+  if (action === "interact" || action === "wait") return { type: action };
+  const direction = action.startsWith("move-") ? action.slice(5) : "";
+  if (!["north", "south", "west", "east"].includes(direction))
+    throw new Error(`Invalid creator playtest action '${action}'`);
+  return {
+    type: "move",
+    direction: /** @type {import("../../dist-package/index.js").Direction} */ (direction)
+  };
 }
 
 async function fetchJson(relative) {

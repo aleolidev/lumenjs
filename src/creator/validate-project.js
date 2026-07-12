@@ -121,6 +121,7 @@ function validateManifestPaths(manifest, diagnostics) {
     [
       "project.lumen.json",
       "index.html",
+      "lumen-core.js",
       "offline.js",
       "playtest-browser.js",
       "playtest-simulation.js",

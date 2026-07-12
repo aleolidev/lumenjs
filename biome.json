@@ -8,6 +8,7 @@
       "!playwright-report",
       "!coverage",
       "!dist",
+      "!dist-package",
       "!notes"
     ]
   },

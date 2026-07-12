@@ -6,7 +6,8 @@ remains unpublished.
 ## Approved decisions
 
 - Project license: Apache-2.0.
-- Candidate product: the `lumen` creator CLI, not a public engine library.
+- Candidate product: the `lumen` creator CLI plus a minimum TypeScript core;
+  publication remains deferred until the core passes its two-game gates.
 - Candidate package identity: `lumenjs@0.1.0`.
 - Candidate npm channel: `next`.
 - Public hosting: Cloudflare Pages at <https://lumenjs.pages.dev>.
@@ -23,7 +24,8 @@ availability check; npm does not reserve the name until an authorized publish.
 - The package carries `LICENSE`, Apache metadata, README, and third-party notices.
 - `npm run check:release` packs, installs, and exercises the CLI from a clean
   temporary consumer without publishing.
-- The package exposes only the `lumen` executable and no library entry point.
+- The package exposes the `lumen` executable and one experimental ESM entry
+  point with TypeScript declarations.
 - The manual release-candidate workflow has read-only repository permissions and
   uploads an unpublished tarball for seven days. It contains no registry token,
   OIDC permission, or `npm publish` command.

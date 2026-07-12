@@ -20,6 +20,7 @@
   "type": "module",
   "files": [
     "bin/lumen.js",
+    "dist-package",
     "src/creator/backup-store.js",
     "src/creator/cli.js",
     "src/creator/export-project.js",
@@ -41,6 +42,12 @@
   "bin": {
     "lumen": "./bin/lumen.js"
   },
+  "exports": {
+    ".": {
+      "types": "./dist-package/index.d.ts",
+      "import": "./dist-package/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public",
     "tag": "next"
@@ -54,11 +61,13 @@
     "ci": "npm run check && npm run build && npm run check:cloudflare && npm run test:browser",
     "format": "biome check --write .",
     "check:spikes": "node --test spikes/**/*.test.js",
-    "build": "vite build",
+    "build": "npm run build:package && vite build",
+    "build:package": "tsc -p tsconfig.package.json",
     "lumen": "node ./bin/lumen.js",
+    "prepack": "npm run build:package",
     "dev": "vite",
     "dev:spikes": "vite spikes/browser",
-    "test:node": "node --test src/*.test.js src/**/*.test.js spikes/**/*.test.js",
+    "test:node": "npm run build:package && node --test src/*.test.js src/**/*.test.js spikes/**/*.test.js",
     "test:browser": "playwright test",
     "test:gpu": "LUMEN_REQUIRE_GPU=1 playwright test tests/browser/first-light.gpu.spec.js --headed --project=chromium --workers=1"
   },

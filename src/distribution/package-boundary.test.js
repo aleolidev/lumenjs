@@ -10,12 +10,17 @@ import { promisify } from "node:util";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const execFileAsync = promisify(execFile);
 
-test("public experimental package contains the CLI closure without library entry points", async () => {
+test("public experimental package contains the CLI closure and minimum TypeScript core", async () => {
   const manifest = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
   const lock = JSON.parse(await readFile(path.join(root, "package-lock.json"), "utf8"));
   assert.equal(manifest.private, false);
   assert.equal(manifest.version, "0.1.0");
-  assert.equal("exports" in manifest, false);
+  assert.deepEqual(manifest.exports, {
+    ".": {
+      types: "./dist-package/index.d.ts",
+      import: "./dist-package/index.js"
+    }
+  });
   assert.equal("main" in manifest, false);
   assert.equal("module" in manifest, false);
   assert.equal(manifest.license, "Apache-2.0");
@@ -45,15 +50,20 @@ test("public experimental package contains the CLI closure without library entry
   assert.ok(visited.has("src/project/schemas.js"));
   const runtimeAssets = [
     ["src/creator/playtest-browser.js", "./playtest-browser.js"],
-    ["src/creator/playtest-simulation.js", "./playtest-simulation.js"],
     ["src/modules/resolve-context.js", "../modules/resolve-context.js"]
   ];
   const exporter = await readFile(path.join(root, "src/creator/export-project.js"), "utf8");
   for (const [, relative] of runtimeAssets) assert.ok(exporter.includes(`new URL("${relative}"`));
+  assert.ok(exporter.includes('new URL("../../dist-package/index.js"'));
   assert.deepEqual(
     [...manifest.files].sort(),
     [
-      ...new Set([...visited, ...runtimeAssets.map(([asset]) => asset), "THIRD_PARTY_NOTICES.md"])
+      ...new Set([
+        ...visited,
+        ...runtimeAssets.map(([asset]) => asset),
+        "dist-package",
+        "THIRD_PARTY_NOTICES.md"
+      ])
     ].sort()
   );
 });
@@ -84,6 +94,10 @@ test("npm dry-run inventory is the exact public experimental candidate boundary"
       "README.md",
       "THIRD_PARTY_NOTICES.md",
       "bin/lumen.js",
+      "dist-package/index.d.ts",
+      "dist-package/index.d.ts.map",
+      "dist-package/index.js",
+      "dist-package/index.js.map",
       "package.json",
       "src/creator/backup-store.js",
       "src/creator/cli.js",

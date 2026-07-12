@@ -43,7 +43,14 @@ try {
   if (firstHash !== secondHash || candidate.integrity !== repacked.integrity) {
     throw new Error("Repeated npm packing did not produce the same candidate bytes and integrity.");
   }
-  for (const required of ["LICENSE", "README.md", "THIRD_PARTY_NOTICES.md", "bin/lumen.js"]) {
+  for (const required of [
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md",
+    "bin/lumen.js",
+    "dist-package/index.js",
+    "dist-package/index.d.ts"
+  ]) {
     if (!candidate.files.some((entry) => entry.path === required)) {
       throw new Error(`Packed candidate is missing ${required}.`);
     }
@@ -61,6 +68,15 @@ try {
   if (installedManifest.license !== "Apache-2.0" || installedManifest.private !== false) {
     throw new Error("Installed candidate does not expose the approved public license boundary.");
   }
+  await execFileAsync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      "import { createGame } from 'lumenjs'; if (typeof createGame !== 'function') process.exit(1);"
+    ],
+    { cwd: consumerDirectory, env: quietNpmEnvironment(npmCache) }
+  );
 
   const cli = path.join(installedRoot, "bin", "lumen.js");
   const project = path.join(consumerDirectory, "clean-consumer");
@@ -77,7 +93,7 @@ try {
   await runCli(cli, ["verify-export", output], npmCache);
 
   process.stdout.write(
-    `Verified ${candidate.name}@${candidate.version}: ${candidate.entryCount} reproducible packed files (${firstHash}), clean install, creator workflow, and export.\n`
+    `Verified ${candidate.name}@${candidate.version}: ${candidate.entryCount} reproducible packed files (${firstHash}), clean library import, creator workflow, and export.\n`
   );
 } finally {
   await rm(temporaryRoot, { recursive: true, force: true });

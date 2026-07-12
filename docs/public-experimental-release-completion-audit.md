@@ -10,7 +10,7 @@ definitive engine modules.
 | # | Requirement | Authoritative evidence | Result |
 | ---: | --- | --- | --- |
 | 1 | Apache-2.0 selected and transported | Root `LICENSE`, package/lock SPDX metadata, README, notices, licensing audit, exact tarball inventory | Proven. |
-| 2 | Public npm candidate, not a library API | `lumenjs@0.1.0`, public `next` publish config, sole `lumen` bin, no main/module/exports | Proven locally. |
+| 2 | Public npm candidate | `lumenjs@0.1.0`, public `next` publish config, `lumen` bin, and one experimental minimum-core export | Reopened for two-game TypeScript-core validation. |
 | 3 | No npm publication or stored credentials | Public Git remote; no registry token; read-only manual candidate workflow; separate gated publish workflow | Proven. |
 | 4 | Clean installation workflow | `npm run check:release` packs twice byte-identically, installs from tarball, then creates, validates, inspects, focuses, exports, and verifies | Proven. |
 | 5 | Cloudflare Pages deployment | Git integration limited to `lumenjs`; protected `main`; Node 22 build; public HTTPS origin and live First Light | Core origin proven; extended offline/update/rollback matrix remains. |

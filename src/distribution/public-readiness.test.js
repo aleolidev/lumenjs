@@ -27,10 +27,11 @@ test("Apache-2.0 candidate metadata is public while engine modules stay internal
     url: "git+https://github.com/aleolidev/lumenjs.git"
   });
   assert.deepEqual(manifest.bin, { lumen: "./bin/lumen.js" });
-  assert.equal("exports" in manifest, false);
+  assert.equal(manifest.exports["."].types, "./dist-package/index.d.ts");
+  assert.equal(manifest.exports["."].import, "./dist-package/index.js");
   assert.equal("main" in manifest, false);
   assert.match(license, /Apache License\s+Version 2\.0, January 2004/);
-  assert.match(readiness, /not a public engine library/);
+  assert.match(readiness, /minimum TypeScript core/);
   assert.match(readiness, /no long-lived compatibility promise/);
   assert.match(readiness, /npm package\s+remains unpublished/);
   assert.match(readiness, /https:\/\/lumenjs\.pages\.dev/);

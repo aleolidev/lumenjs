@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "outDir": "dist-package",
+    "rootDir": "src/core",
+    "sourceMap": true,
+    "types": []
+  },
+  "include": ["src/core/**/*.ts"]
+}
