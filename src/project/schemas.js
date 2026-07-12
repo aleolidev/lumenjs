@@ -6,7 +6,11 @@ export const manifestSchema = {
   properties: {
     schemaVersion: { const: 1 },
     projectId: { $ref: "#/$defs/id" },
-    title: { type: "string", minLength: 1 },
+    title: {
+      type: "string",
+      pattern:
+        "^(?![\\s\\S]*(?:\\p{Cc}|\\p{Zl}|\\p{Zp}|\\p{Bidi_Control}|[\\u200B\\u2060\\uFEFF]))[\\s\\S]*[\\p{L}\\p{N}\\p{P}\\p{S}][\\s\\S]*$"
+    },
     version: { type: "string", pattern: "^\\d+\\.\\d+\\.\\d+$" },
     startMap: { $ref: "#/$defs/id" },
     sources: {
@@ -14,13 +18,33 @@ export const manifestSchema = {
       additionalProperties: false,
       required: ["map", "world"],
       properties: {
-        map: { type: "string", pattern: "^[^/]+\\.tmj$" },
-        world: { type: "string", pattern: "^[^/]+\\.lumen\\.json$" },
-        campaign: { type: "string", pattern: "^[^/]+\\.lumen\\.json$" }
+        map: { $ref: "#/$defs/mapFile" },
+        world: { $ref: "#/$defs/lumenFile" },
+        campaign: { $ref: "#/$defs/lumenFile" },
+        additionalMaps: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["id", "map", "world"],
+            properties: {
+              id: { $ref: "#/$defs/id" },
+              map: { $ref: "#/$defs/mapFile" },
+              world: { $ref: "#/$defs/lumenFile" }
+            }
+          }
+        }
       }
     }
   },
-  $defs: { id: { type: "string", pattern: "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" } }
+  $defs: {
+    id: {
+      type: "string",
+      pattern: "^(?!(?:constructor|prototype)$)[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    mapFile: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*[.]tmj$" },
+    lumenFile: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*[.]lumen[.]json$" }
+  }
 };
 
 export const tiledMapSchema = {
@@ -44,7 +68,22 @@ export const tiledMapSchema = {
           id: { type: "integer" },
           name: { type: "string", minLength: 1 },
           type: { enum: ["tilelayer", "objectgroup"] },
-          objects: { type: "array" },
+          objects: {
+            type: "array",
+            items: {
+              type: "object",
+              required: ["id", "name", "type", "x", "y"],
+              properties: {
+                id: { type: "integer" },
+                name: { type: "string" },
+                type: { type: "string" },
+                x: { type: "number" },
+                y: { type: "number" },
+                width: { type: "number", minimum: 0 },
+                height: { type: "number", minimum: 0 }
+              }
+            }
+          },
           data: { type: "array", items: { type: "integer" } }
         }
       }
@@ -52,7 +91,14 @@ export const tiledMapSchema = {
   }
 };
 
-const reference = { type: "string", pattern: "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" };
+const reference = {
+  type: "string",
+  pattern: "^(?!(?:constructor|prototype)$)[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+};
+const visibleText = {
+  type: "string",
+  pattern: "[\\p{L}\\p{N}\\p{P}\\p{S}]"
+};
 
 export const worldSchema = {
   $id: "https://lumenjs.dev/schema/first-light-world-v1.json",
@@ -71,7 +117,7 @@ export const worldSchema = {
   properties: {
     schemaVersion: { const: 1 },
     mapId: reference,
-    mapSource: { type: "string", pattern: "^[^/]+\\.tmj$" },
+    mapSource: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*[.]tmj$" },
     spawn: reference,
     character: {
       type: "object",
@@ -79,9 +125,9 @@ export const worldSchema = {
       required: ["object", "name", "messageBefore", "messageAfter"],
       properties: {
         object: reference,
-        name: { type: "string", minLength: 1 },
-        messageBefore: { type: "string", minLength: 1 },
-        messageAfter: { type: "string", minLength: 1 }
+        name: visibleText,
+        messageBefore: visibleText,
+        messageAfter: visibleText
       }
     },
     beacon: {
@@ -101,6 +147,89 @@ export const worldSchema = {
       additionalProperties: false,
       required: ["object", "target"],
       properties: { object: reference, target: reference }
+    },
+    additionalSpawns: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "object"],
+        properties: { id: reference, object: reference }
+      }
+    },
+    mapTransitions: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "object", "targetMap", "targetSpawn"],
+        properties: {
+          id: reference,
+          object: reference,
+          targetMap: reference,
+          targetSpawn: reference,
+          facing: { enum: ["north", "south", "west", "east"] }
+        }
+      }
+    }
+  }
+};
+
+export const continuityWorldSchema = {
+  $id: "https://lumenjs.dev/schema/continuity-world-v2.json",
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "schemaVersion",
+    "mapId",
+    "mapSource",
+    "kind",
+    "defaultSpawn",
+    "spawns",
+    "transitions"
+  ],
+  properties: {
+    schemaVersion: { const: 2 },
+    mapId: reference,
+    mapSource: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*[.]tmj$" },
+    kind: { const: "interior" },
+    defaultSpawn: reference,
+    spawns: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "object"],
+        properties: { id: reference, object: reference }
+      }
+    },
+    character: {
+      type: "object",
+      additionalProperties: false,
+      required: ["object", "name", "message", "messageWithGlintail"],
+      properties: {
+        object: reference,
+        name: visibleText,
+        message: visibleText,
+        messageWithGlintail: visibleText
+      }
+    },
+    transitions: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "object", "targetMap", "targetSpawn"],
+        properties: {
+          id: reference,
+          object: reference,
+          targetMap: reference,
+          targetSpawn: reference,
+          facing: { enum: ["north", "south", "west", "east"] }
+        }
+      }
     }
   }
 };
@@ -135,8 +264,8 @@ export const campaignSchema = {
             required: ["id", "speaker", "text", "choices"],
             properties: {
               id: reference,
-              speaker: { type: "string", minLength: 1 },
-              text: { type: "string", minLength: 1 },
+              speaker: visibleText,
+              text: visibleText,
               choices: {
                 type: "array",
                 minItems: 1,
@@ -146,7 +275,7 @@ export const campaignSchema = {
                   required: ["id", "label", "effect"],
                   properties: {
                     id: reference,
-                    label: { type: "string", minLength: 1 },
+                    label: visibleText,
                     effect: { enum: ["choose-companion", "close-dialogue"] },
                     creature: reference,
                     next: reference
@@ -167,7 +296,7 @@ export const campaignSchema = {
         required: ["id", "name", "power", "uses"],
         properties: {
           id: reference,
-          name: { type: "string", minLength: 1 },
+          name: visibleText,
           power: { type: "integer", minimum: 1 },
           uses: { type: "integer", minimum: 1 }
         }
@@ -182,13 +311,14 @@ export const campaignSchema = {
         required: ["id", "name", "health", "speed", "moves", "colors"],
         properties: {
           id: reference,
-          name: { type: "string", minLength: 1 },
+          name: visibleText,
           health: { type: "integer", minimum: 1 },
           speed: { type: "integer", minimum: 1 },
           moves: {
             type: "array",
             minItems: 2,
             maxItems: 2,
+            uniqueItems: true,
             items: reference
           },
           colors: {
@@ -204,6 +334,7 @@ export const campaignSchema = {
       type: "array",
       minItems: 2,
       maxItems: 2,
+      uniqueItems: true,
       items: reference
     },
     encounter: {

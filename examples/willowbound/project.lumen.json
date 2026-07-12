@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "projectId": "willowbound",
+  "title": "Willowbound",
+  "version": "0.1.0",
+  "startMap": "willow-crossing",
+  "sources": {
+    "maps": [
+      {
+        "id": "willow-crossing",
+        "map": "maps/willow-crossing.tmj",
+        "world": "worlds/willow-crossing.lumen.json"
+      },
+      {
+        "id": "starglass-workshop",
+        "map": "maps/starglass-workshop.tmj",
+        "world": "worlds/starglass-workshop.lumen.json"
+      }
+    ],
+    "campaign": "campaign/campaign.lumen.json",
+    "provenance": "PROVENANCE.md",
+    "locales": {
+      "default": "en",
+      "catalogs": {
+        "en": "locales/en.json",
+        "es": "locales/es.json"
+      }
+    },
+    "contextModules": [
+      {
+        "id": "workshop-atmosphere",
+        "version": 1,
+        "source": "modules/workshop-atmosphere.json"
+      },
+      {
+        "id": "careful-traveler",
+        "version": 1,
+        "source": "modules/careful-traveler.json",
+        "optional": true
+      }
+    ],
+    "assets": []
+  }
+}

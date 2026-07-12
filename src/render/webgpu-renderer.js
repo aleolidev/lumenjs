@@ -44,9 +44,19 @@ struct VertexOutput {
 export async function createWebGpuRenderer(canvas) {
   const started = performance.now();
   if (!navigator.gpu) return unsupported("WebGPU is not exposed by this browser", started);
-  const adapter = await navigator.gpu.requestAdapter();
+  let adapter;
+  try {
+    adapter = await navigator.gpu.requestAdapter();
+  } catch (error) {
+    return unsupported(`WebGPU adapter request failed: ${errorMessage(error)}`, started);
+  }
   if (!adapter) return unsupported("No WebGPU adapter is available", started);
-  const device = await adapter.requestDevice();
+  let device;
+  try {
+    device = await adapter.requestDevice();
+  } catch (error) {
+    return unsupported(`WebGPU device request failed: ${errorMessage(error)}`, started);
+  }
   const gpuErrors = [];
   device.addEventListener("uncapturederror", (event) => {
     gpuErrors.push(event.error.message);
@@ -58,163 +68,168 @@ export async function createWebGpuRenderer(canvas) {
     return unsupported("A WebGPU canvas context is unavailable", started);
   }
 
-  const format = navigator.gpu.getPreferredCanvasFormat();
-  const module = device.createShaderModule({ code: shader });
-  const pipeline = device.createRenderPipeline({
-    layout: "auto",
-    vertex: {
-      module,
-      buffers: [
-        {
-          arrayStride: FLOATS_PER_VERTEX * 4,
-          attributes: [
-            { shaderLocation: 0, offset: 0, format: "float32x3" },
-            { shaderLocation: 1, offset: 12, format: "float32x2" },
-            { shaderLocation: 2, offset: 20, format: "float32x4" },
-            { shaderLocation: 3, offset: 36, format: "float32" }
-          ]
-        }
-      ]
-    },
-    fragment: {
-      module,
-      targets: [
-        {
-          format,
-          blend: {
-            color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" },
-            alpha: { srcFactor: "one", dstFactor: "one-minus-src-alpha" }
+  try {
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    const module = device.createShaderModule({ code: shader });
+    const pipeline = device.createRenderPipeline({
+      layout: "auto",
+      vertex: {
+        module,
+        buffers: [
+          {
+            arrayStride: FLOATS_PER_VERTEX * 4,
+            attributes: [
+              { shaderLocation: 0, offset: 0, format: "float32x3" },
+              { shaderLocation: 1, offset: 12, format: "float32x2" },
+              { shaderLocation: 2, offset: 20, format: "float32x4" },
+              { shaderLocation: 3, offset: 36, format: "float32" }
+            ]
           }
-        }
-      ]
-    },
-    primitive: { topology: "triangle-list", cullMode: "none" },
-    depthStencil: { format: "depth24plus", depthWriteEnabled: true, depthCompare: "less" }
-  });
-  const sampler = device.createSampler({
-    magFilter: "nearest",
-    minFilter: "nearest",
-    mipmapFilter: "nearest",
-    addressModeU: "clamp-to-edge",
-    addressModeV: "clamp-to-edge"
-  });
-  const textureResources = await loadTextures(device, pipeline, sampler);
-  let vertexBuffer = null;
-  let depthTexture = null;
-  let configuredWidth = 0;
-  let configuredHeight = 0;
-  const frameTimes = [];
-  const cpuTimes = [];
-  const diagnostics = {
-    status: "ready",
-    reason: null,
-    projection: "top-down-three-quarter-v1",
-    visualMode: "classic",
-    initializedMs: round(performance.now() - started),
-    features: [...device.features].sort(),
-    limits: {
-      maxTextureDimension2D: device.limits.maxTextureDimension2D,
-      maxBindGroups: device.limits.maxBindGroups
-    },
-    textures: Object.keys(textureResources),
-    gpuErrors,
-    viewport: { width: 0, height: 0, devicePixelRatio: window.devicePixelRatio },
-    drawCalls: 0,
-    vertices: 0,
-    uploadBytes: 0,
-    frameMs: 0,
-    medianFrameMs: 0,
-    cpuSceneAndSubmitMs: 0,
-    medianCpuSceneAndSubmitMs: 0,
-    submittedFrames: 0
-  };
-
-  async function render(scene, sceneBuildMs = 0) {
-    const frameStarted = performance.now();
-    device.pushErrorScope("validation");
-    const width = Math.max(1, Math.floor(canvas.clientWidth * window.devicePixelRatio));
-    const height = Math.max(1, Math.floor(canvas.clientHeight * window.devicePixelRatio));
-    if (width !== configuredWidth || height !== configuredHeight) {
-      configuredWidth = width;
-      configuredHeight = height;
-      canvas.width = width;
-      canvas.height = height;
-      context.configure({ device, format, alphaMode: "opaque" });
-      depthTexture?.destroy();
-      depthTexture = device.createTexture({
-        size: [width, height],
-        format: "depth24plus",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
-      });
-    }
-
-    const geometry = createGeometry(scene, width, height);
-    vertexBuffer?.destroy();
-    vertexBuffer = device.createBuffer({
-      size: Math.max(4, geometry.vertices.byteLength),
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        ]
+      },
+      fragment: {
+        module,
+        targets: [
+          {
+            format,
+            blend: {
+              color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha" },
+              alpha: { srcFactor: "one", dstFactor: "one-minus-src-alpha" }
+            }
+          }
+        ]
+      },
+      primitive: { topology: "triangle-list", cullMode: "none" },
+      depthStencil: { format: "depth24plus", depthWriteEnabled: true, depthCompare: "less" }
     });
-    device.queue.writeBuffer(vertexBuffer, 0, geometry.vertices);
-    const encoder = device.createCommandEncoder();
-    const pass = encoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: context.getCurrentTexture().createView(),
-          clearValue: { r: 0.025, g: 0.055, b: 0.07, a: 1 },
-          loadOp: "clear",
-          storeOp: "store"
-        }
-      ],
-      depthStencilAttachment: {
-        view: depthTexture.createView(),
-        depthClearValue: 1,
-        depthLoadOp: "clear",
-        depthStoreOp: "store"
+    const sampler = device.createSampler({
+      magFilter: "nearest",
+      minFilter: "nearest",
+      mipmapFilter: "nearest",
+      addressModeU: "clamp-to-edge",
+      addressModeV: "clamp-to-edge"
+    });
+    const textureResources = await loadTextures(device, pipeline, sampler);
+    let vertexBuffer = null;
+    let depthTexture = null;
+    let configuredWidth = 0;
+    let configuredHeight = 0;
+    const frameTimes = [];
+    const cpuTimes = [];
+    const diagnostics = {
+      status: "ready",
+      reason: null,
+      projection: "top-down-three-quarter-v1",
+      visualMode: "classic",
+      initializedMs: round(performance.now() - started),
+      features: [...device.features].sort(),
+      limits: {
+        maxTextureDimension2D: device.limits.maxTextureDimension2D,
+        maxBindGroups: device.limits.maxBindGroups
+      },
+      textures: Object.keys(textureResources),
+      gpuErrors,
+      viewport: { width: 0, height: 0, devicePixelRatio: window.devicePixelRatio },
+      drawCalls: 0,
+      vertices: 0,
+      uploadBytes: 0,
+      frameMs: 0,
+      medianFrameMs: 0,
+      cpuSceneAndSubmitMs: 0,
+      medianCpuSceneAndSubmitMs: 0,
+      submittedFrames: 0
+    };
+
+    async function render(scene, sceneBuildMs = 0) {
+      const frameStarted = performance.now();
+      device.pushErrorScope("validation");
+      const width = Math.max(1, Math.floor(canvas.clientWidth * window.devicePixelRatio));
+      const height = Math.max(1, Math.floor(canvas.clientHeight * window.devicePixelRatio));
+      if (width !== configuredWidth || height !== configuredHeight) {
+        configuredWidth = width;
+        configuredHeight = height;
+        canvas.width = width;
+        canvas.height = height;
+        context.configure({ device, format, alphaMode: "opaque" });
+        depthTexture?.destroy();
+        depthTexture = device.createTexture({
+          size: [width, height],
+          format: "depth24plus",
+          usage: GPUTextureUsage.RENDER_ATTACHMENT
+        });
       }
-    });
-    pass.setPipeline(pipeline);
-    pass.setVertexBuffer(0, vertexBuffer);
-    for (const batch of geometry.batches) {
-      pass.setBindGroup(0, textureResources[batch.texture].bindGroup);
-      pass.draw(batch.vertexCount, 1, batch.firstVertex);
-    }
-    pass.end();
-    device.queue.submit([encoder.finish()]);
-    const cpuElapsed = performance.now() - frameStarted + sceneBuildMs;
-    await device.queue.onSubmittedWorkDone();
-    const validationError = await device.popErrorScope();
-    if (validationError) gpuErrors.push(validationError.message);
 
-    const elapsed = performance.now() - frameStarted;
-    frameTimes.push(elapsed);
-    cpuTimes.push(cpuElapsed);
-    if (frameTimes.length > 120) frameTimes.shift();
-    if (cpuTimes.length > 120) cpuTimes.shift();
-    diagnostics.projection = scene.projection;
-    diagnostics.visualMode = scene.visualMode;
-    diagnostics.viewport = { width, height, devicePixelRatio: window.devicePixelRatio };
-    diagnostics.drawCalls = geometry.batches.length;
-    diagnostics.vertices = geometry.vertices.length / FLOATS_PER_VERTEX;
-    diagnostics.uploadBytes = geometry.vertices.byteLength;
-    diagnostics.frameMs = round(elapsed);
-    diagnostics.medianFrameMs = round(median(frameTimes));
-    diagnostics.cpuSceneAndSubmitMs = round(cpuElapsed);
-    diagnostics.medianCpuSceneAndSubmitMs = round(median(cpuTimes));
-    diagnostics.submittedFrames += 1;
-    return { ...diagnostics };
-  }
-
-  return {
-    status: "ready",
-    diagnostics,
-    render,
-    destroy() {
+      const geometry = createGeometry(scene, width, height);
       vertexBuffer?.destroy();
-      depthTexture?.destroy();
-      for (const resource of Object.values(textureResources)) resource.texture.destroy();
-      device.destroy();
+      vertexBuffer = device.createBuffer({
+        size: Math.max(4, geometry.vertices.byteLength),
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+      });
+      device.queue.writeBuffer(vertexBuffer, 0, geometry.vertices);
+      const encoder = device.createCommandEncoder();
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: context.getCurrentTexture().createView(),
+            clearValue: { r: 0.025, g: 0.055, b: 0.07, a: 1 },
+            loadOp: "clear",
+            storeOp: "store"
+          }
+        ],
+        depthStencilAttachment: {
+          view: depthTexture.createView(),
+          depthClearValue: 1,
+          depthLoadOp: "clear",
+          depthStoreOp: "store"
+        }
+      });
+      pass.setPipeline(pipeline);
+      pass.setVertexBuffer(0, vertexBuffer);
+      for (const batch of geometry.batches) {
+        pass.setBindGroup(0, textureResources[batch.texture].bindGroup);
+        pass.draw(batch.vertexCount, 1, batch.firstVertex);
+      }
+      pass.end();
+      device.queue.submit([encoder.finish()]);
+      const cpuElapsed = performance.now() - frameStarted + sceneBuildMs;
+      await device.queue.onSubmittedWorkDone();
+      const validationError = await device.popErrorScope();
+      if (validationError) gpuErrors.push(validationError.message);
+
+      const elapsed = performance.now() - frameStarted;
+      frameTimes.push(elapsed);
+      cpuTimes.push(cpuElapsed);
+      if (frameTimes.length > 120) frameTimes.shift();
+      if (cpuTimes.length > 120) cpuTimes.shift();
+      diagnostics.projection = scene.projection;
+      diagnostics.visualMode = scene.visualMode;
+      diagnostics.viewport = { width, height, devicePixelRatio: window.devicePixelRatio };
+      diagnostics.drawCalls = geometry.batches.length;
+      diagnostics.vertices = geometry.vertices.length / FLOATS_PER_VERTEX;
+      diagnostics.uploadBytes = geometry.vertices.byteLength;
+      diagnostics.frameMs = round(elapsed);
+      diagnostics.medianFrameMs = round(median(frameTimes));
+      diagnostics.cpuSceneAndSubmitMs = round(cpuElapsed);
+      diagnostics.medianCpuSceneAndSubmitMs = round(median(cpuTimes));
+      diagnostics.submittedFrames += 1;
+      return { ...diagnostics };
     }
-  };
+
+    return {
+      status: "ready",
+      diagnostics,
+      render,
+      destroy() {
+        vertexBuffer?.destroy();
+        depthTexture?.destroy();
+        for (const resource of Object.values(textureResources)) resource.texture.destroy();
+        device.destroy();
+      }
+    };
+  } catch (error) {
+    device.destroy();
+    throw error;
+  }
 }
 
 async function loadTextures(device, pipeline, sampler) {
@@ -226,29 +241,32 @@ async function loadTextures(device, pipeline, sampler) {
       premultiplyAlpha: "none",
       colorSpaceConversion: "none"
     });
-    const texture = device.createTexture({
-      size: [bitmap.width, bitmap.height],
-      format: "rgba8unorm",
-      usage:
-        GPUTextureUsage.TEXTURE_BINDING |
-        GPUTextureUsage.COPY_DST |
-        GPUTextureUsage.RENDER_ATTACHMENT
-    });
-    device.queue.copyExternalImageToTexture({ source: bitmap, flipY: false }, { texture }, [
-      bitmap.width,
-      bitmap.height
-    ]);
-    bitmap.close();
-    resources[id] = {
-      texture,
-      bindGroup: device.createBindGroup({
-        layout: pipeline.getBindGroupLayout(0),
-        entries: [
-          { binding: 0, resource: texture.createView() },
-          { binding: 1, resource: sampler }
-        ]
-      })
-    };
+    try {
+      const texture = device.createTexture({
+        size: [bitmap.width, bitmap.height],
+        format: "rgba8unorm",
+        usage:
+          GPUTextureUsage.TEXTURE_BINDING |
+          GPUTextureUsage.COPY_DST |
+          GPUTextureUsage.RENDER_ATTACHMENT
+      });
+      device.queue.copyExternalImageToTexture({ source: bitmap, flipY: false }, { texture }, [
+        bitmap.width,
+        bitmap.height
+      ]);
+      resources[id] = {
+        texture,
+        bindGroup: device.createBindGroup({
+          layout: pipeline.getBindGroupLayout(0),
+          entries: [
+            { binding: 0, resource: texture.createView() },
+            { binding: 1, resource: sampler }
+          ]
+        })
+      };
+    } finally {
+      bitmap.close();
+    }
   }
   return resources;
 }
@@ -402,4 +420,8 @@ function median(values) {
 
 function round(value) {
   return Math.round(value * 1000) / 1000;
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }

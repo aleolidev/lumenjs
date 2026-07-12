@@ -1,0 +1,4 @@
+# Local Lumen creator recovery and temporary files.
+/.lumen/
+*.lumen-rename-*
+/.lumen-restore-files-*

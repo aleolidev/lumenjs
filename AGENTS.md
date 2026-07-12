@@ -1,7 +1,7 @@
 # LumenJS
 
-LumenJS is an open-source JavaScript and WebGPU platform for creating polished
-creature-RPG fangames with an approachable, modern workflow.
+LumenJS is being developed as an open-source JavaScript and WebGPU platform for
+creating polished creature-RPG fangames with an approachable, modern workflow.
 
 ## Principles
 
@@ -19,6 +19,14 @@ creature-RPG fangames with an approachable, modern workflow.
 
 ## Current phase
 
-Research and scope the product before implementing the engine. Do not settle
-the `src` structure or add runtime architecture until explicitly justified by
-the research.
+Phases 1–4 are complete as scoped local experimental evidence. Phase 5 is
+active: prepare the Apache-2.0 `0.1.0` public experimental CLI candidate while
+preserving explicit owner and external-evidence gates. Do not publish a package,
+connect a hosting account, claim supported public hosting, installable-PWA or
+physical-device coverage, promise compatibility, or introduce operated services
+without the recorded decisions and evidence in
+`docs/phase-5-owner-decision-checklist.md`.
+
+Existing runtime structure remains internal and research-driven. Do not expand
+it into a public engine architecture or compatibility contract without new
+multi-project evidence.

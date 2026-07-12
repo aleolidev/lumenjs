@@ -59,11 +59,36 @@
           <p><kbd>WASD</kbd> or <kbd>arrows</kbd> move · <kbd>Space</kbd> interacts</p>
           <p>Speak to Mira, choose a companion, then find the east trail.</p>
         </div>
+        <div class="world-controls" role="group" aria-label="World movement controls">
+          <button class="north" type="button" data-world-action="move-north" aria-label="Move north">↑</button>
+          <button class="west" type="button" data-world-action="move-west" aria-label="Move west">←</button>
+          <button class="south" type="button" data-world-action="move-south" aria-label="Move south">↓</button>
+          <button class="east" type="button" data-world-action="move-east" aria-label="Move east">→</button>
+          <button class="interact" type="button" data-world-action="interact">Interact</button>
+        </div>
         <div class="control-buttons">
           <button id="visual-mode" type="button" aria-pressed="false">Visual mode: Classic</button>
-          <button id="replay" type="button">Run campaign replay</button>
+          <button id="replay" type="button">Run continuity replay</button>
+          <button id="save" type="button">Save</button>
+          <button id="load" type="button">Load</button>
+          <button id="export" type="button">Export</button>
+          <button id="import" type="button">Import</button>
+          <input id="import-file" type="file" accept="application/json,.json" hidden>
         </div>
       </section>
+      <p id="save-status" class="save-status" role="status" aria-live="polite">
+        Journey has not been saved in this session.
+      </p>
+
+      <dialog id="import-dialog" aria-labelledby="import-title">
+        <h2 id="import-title">Replace the local journey?</h2>
+        <pre id="import-preview"></pre>
+        <p>The current generation remains available as a recovery backup.</p>
+        <div class="control-buttons">
+          <button id="confirm-import" type="button">Confirm replacement</button>
+          <button id="cancel-import" type="button">Cancel</button>
+        </div>
+      </dialog>
 
       <details class="diagnostics" open>
         <summary>Diagnostics</summary>

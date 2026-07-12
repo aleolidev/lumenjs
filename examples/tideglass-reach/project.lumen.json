@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "projectId": "tideglass-reach",
+  "title": "Tideglass Reach",
+  "version": "0.1.0",
+  "startMap": "tideglass-shore",
+  "sources": {
+    "maps": [
+      {
+        "id": "tideglass-shore",
+        "map": "maps/tideglass-shore.tmj",
+        "world": "worlds/tideglass-shore.lumen.json"
+      },
+      {
+        "id": "signal-tower",
+        "map": "maps/signal-tower.tmj",
+        "world": "worlds/signal-tower.lumen.json"
+      }
+    ],
+    "campaign": "campaign/campaign.lumen.json",
+    "provenance": "PROVENANCE.md",
+    "locales": {
+      "default": "en",
+      "catalogs": {
+        "en": "locales/en.json",
+        "es": "locales/es.json"
+      }
+    },
+    "contextModules": [
+      {
+        "id": "workshop-atmosphere",
+        "version": 1,
+        "source": "modules/workshop-atmosphere.json"
+      },
+      {
+        "id": "careful-traveler",
+        "version": 1,
+        "source": "modules/careful-traveler.json",
+        "optional": true
+      }
+    ],
+    "assets": []
+  }
+}

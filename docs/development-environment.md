@@ -1,14 +1,16 @@
 # Development environment
 
-Status: designed and locally verified for the pre-engine research phase.
+Status: designed in the pre-engine research phase and updated through the
+experimental creator/distribution phases.
 
 This environment exists to give maintainers and autonomous agents reproducible
 feedback before LumenJS defines its engine architecture. It deliberately avoids
-a monorepo, runtime framework, transpilation requirement, or `src` layout.
+a monorepo, runtime framework, transpilation requirement, or treating the
+current experimental `src` boundaries as a settled engine architecture.
 
 ## Baseline
 
-- One private npm package until multiple independently releasable packages are
+- One npm package until multiple independently releasable packages are
   demonstrated.
 - Node.js 22, recorded in `.nvmrc` and `engines`.
 - npm 11 with a committed `package-lock.json`; `npm ci` is the reproducible
@@ -27,23 +29,26 @@ a monorepo, runtime framework, transpilation requirement, or `src` layout.
 | TypeScript | 6.0.3 | `checkJs` static analysis | No |
 | Vite | 8.0.16 | Development server and browser fixtures | No |
 | Playwright | 1.60.0 | Chromium/Firefox/WebKit E2E and traces | No |
-| Ajv | 8.20.0 | Schema experiment; candidate project validator | Undecided |
-| idb | 8.0.3 | Persistence experiment; candidate save adapter | Undecided |
+| Ajv | 8.20.0 | Creator-project schema validation | Yes, public experimental CLI candidate |
+| idb | 8.0.3 | Bundled First Light persistence and browser spikes | No, not in CLI package |
 | WebGPU types | 0.1.69 | Static API declarations | No |
 
-Ajv and `idb` remain development dependencies until a real runtime case proves
-their production boundary. No dependency is moved to runtime by research alone.
+Ajv became the sole direct production dependency after the creator validator
+and clean tarball installation proved its CLI boundary. `idb` remains outside
+the CLI candidate because the published-file allowlist excludes First
+Light and browser spikes.
 
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
 | `npm ci --ignore-scripts` | Recreate the locked dependency tree without lifecycle scripts. |
+| `npx --no-install playwright install chromium firefox webkit` | Install browser binaries through the locked local Playwright CLI. |
 | `npm run format` | Apply formatter and safe lint fixes. |
-| `npm run check` | Formatting/lint, checkJs, and Node spike tests. |
+| `npm run check` | Formatting/lint, checkJs, and all Node tests. |
 | `npm run test:browser` | Headless semantic/E2E matrix in three engines. |
 | `npm run test:gpu` | Serial headed Chromium WebGPU smoke/benchmark lane. |
-| `npm run ci` | Required portable CI checks. |
+| `npm run ci` | Required check, production build, and portable browser matrix. |
 | `npm run dev:spikes` | Serve isolated browser experiments. |
 
 The headed GPU lane is separate because the local headless engines currently do
@@ -105,15 +110,18 @@ Every official module must contribute its own authoring and debug fixtures.
 
 ## CI
 
-The initial GitHub Actions workflow uses Node 22, `npm ci --ignore-scripts`, the
-three Playwright engines, and `npm run ci`. Failed browser diagnostics are kept
-for seven days. It intentionally excludes headed WebGPU because generic hosted
-runners do not prove a real GPU path.
+The GitHub Actions workflow uses Node 22, enables the declared npm 11.6.1
+through Corepack, runs `npm ci --ignore-scripts`, installs the three Playwright
+engines only from the locked local package, and invokes `npm run ci`, which
+includes the production build.
+Failed browser diagnostics are kept for seven days. It intentionally excludes
+headed WebGPU because generic hosted runners do not prove a real GPU path.
 
 Before publishing begins, add separate workflows for:
 
 - nightly real-GPU/device lanes;
-- package packing and consumer-install fixtures;
+- repeatable package packing and consumer-install fixtures (currently proven
+  locally for the unpublished candidate only);
 - SBOM, licenses, signatures, and provenance;
 - staged npm publication through OIDC with approval and 2FA.
 
@@ -174,25 +182,22 @@ content.
 
 ## Source layout policy
 
-No `src` structure is selected yet. When implementation begins, boundaries are
-derived from validated vertical cases and dependency direction, not from this
-tool configuration. Research experiments stay under `spikes/` and must be
-deleted or deliberately promoted after answering their questions.
+The current `src` boundaries were promoted only from validated vertical cases
+and remain experimental rather than a public architecture. Research experiments
+stay under `spikes/` until deliberately rejected, retained as evidence, or
+promoted after answering their questions.
 
 ## Verified state
 
-Local verification completed on 2026-07-11:
-
-- locked install via `npm ci --ignore-scripts` succeeded with zero reported
-  vulnerabilities;
-- formatting/lint, checkJs, and nine Node tests pass;
-- fifteen Playwright tests pass across Chromium, Firefox, and WebKit;
-- headed Chromium exposes WebGPU, submits a render pass, and runs the serial tile
-  benchmark;
-- atomic generational IndexedDB saves and corruption recovery pass in all three
-  browser projects.
+The original 2026-07-11 research baseline grew into the audited First Light,
+campaign, creator, extensibility, and distribution fixtures. The current local
+baseline is recorded in the latest phase completion/progress audits rather than
+duplicated as fixed counts here. It includes formatting/types, Node tests, the
+three-engine browser matrix, production build, a separate headed-WebGPU lane,
+static-export verification, and a clean private-tarball CLI installation.
 
 Physical-device, audio, gamepad, assistive-technology, quota exhaustion,
-multi-tab migration, and real Safari/iOS/WebGPU coverage remain future gates
-that require corresponding runtime features or external hardware. They are not
-claims of the current pre-engine environment.
+multi-tab migration, post-initialization WebGPU device-loss recovery, and real
+Safari/iOS/WebGPU coverage remain future gates that require corresponding
+runtime features or external hardware. They are not claims of the current
+pre-engine environment.

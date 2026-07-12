@@ -1,0 +1,26 @@
+{
+  "format": "lumen-save-v1",
+  "saveFormatVersion": 1,
+  "projectId": "first-light",
+  "projectVersion": "0.2.0",
+  "saveId": "phase-2a-complete",
+  "createdAt": "2026-07-11T00:00:00.000Z",
+  "snapshot": {
+    "format": "lumen-campaign-state-v1",
+    "mode": "world",
+    "world": {
+      "format": "lumen-first-light-state-v1",
+      "tick": 7,
+      "player": { "x": 3, "y": 5, "facing": "south" },
+      "flags": { "beacon-lit": true },
+      "message": "Glintail joined the party.",
+      "transitions": 1
+    },
+    "dialogue": null,
+    "party": ["embercub", "glintail"],
+    "inventory": { "sunberry": 0 },
+    "battle": null,
+    "outcome": "victory"
+  },
+  "snapshotHash": "sha256-v1:c448848c47cc3de198f5a9002ba7642c54a45b241256d8ef2151c595d70a1a0a"
+}

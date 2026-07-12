@@ -1,13 +1,13 @@
 {
   "format": "lumen-campaign-replay-v1",
-  "projectVersion": "0.2.0",
-  "expectedStateHash": "fnv1a32-v1:25fa4c3a",
+  "projectVersion": "0.3.0",
+  "expectedStateHash": "fnv1a32-v1:fd9e73eb",
   "actions": [
     { "type": "world", "action": "move-north" },
     { "type": "world", "action": "move-east" },
     { "type": "world", "action": "move-east" },
     { "type": "world", "action": "interact" },
-    { "type": "dialogue-choice", "choice": "choose-mossling" },
+    { "type": "dialogue-choice", "choice": "choose-embercub" },
     { "type": "dialogue-choice", "choice": "close-warning" },
     { "type": "world", "action": "move-south" },
     { "type": "world", "action": "move-east" },
@@ -20,11 +20,11 @@
     { "type": "world", "action": "move-east" },
     { "type": "world", "action": "move-east" },
     { "type": "world", "action": "move-east" },
-    { "type": "battle-move", "move": "moss-guard" },
-    { "type": "battle-move", "move": "moss-guard" },
-    { "type": "battle-move", "move": "moss-guard" },
-    { "type": "battle-move", "move": "moss-guard" },
-    { "type": "battle-move", "move": "moss-guard" },
-    { "type": "battle-move", "move": "moss-guard" }
+    { "type": "battle-move", "move": "spark-step" },
+    { "type": "battle-item", "item": "sunberry" },
+    { "type": "battle-move", "move": "spark-step" },
+    { "type": "battle-move", "move": "spark-step" },
+    { "type": "battle-move", "move": "spark-step" },
+    { "type": "continue-result" }
   ]
 }

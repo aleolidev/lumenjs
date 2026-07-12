@@ -74,8 +74,9 @@ over canonical state data; it is a regression identity, not a security digest.
 
 ## Rendering contract
 
-The renderer requires WebGPU. Unsupported browsers receive an explicit
-`unsupported` capability result and no fallback renderer is claimed.
+The renderer requires WebGPU. Missing exposure/adapter and rejected adapter or
+device requests receive an explicit `unsupported` capability result and no
+fallback renderer is claimed.
 
 The camera uses a rectangular top-down three-quarter projection with a shallow
 38-degree visual pitch. It is not isometric: world X remains screen-horizontal,

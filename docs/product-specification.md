@@ -1,11 +1,31 @@
 # Product specification direction
 
-Status: direction approved; First Light and the focused Phase 2 campaign slice
-completed and locally validated on 2026-07-11.
+Status: direction approved. Phases 1, 2A/2B, and 3 are complete as local
+experimental evidence; Phase 4 is complete as a narrow research decision with
+only its data-only 4A boundary integrated. Phase 5A–5M are complete internal
+hardening increments, while Phase 5 overall remains active and cannot claim
+release, supported public hosting, installability, physical-device coverage,
+authenticity, or long-lived compatibility without the recorded owner/external
+inputs. Last audited 2026-07-12.
 
 This document turns the capability inventory into delivery phases and proposes
 the first production-quality vertical prototype. It is a prioritization
 document, not an engine architecture or public API specification.
+
+## Current roadmap evidence
+
+| Phase | Current decision | Authoritative audit |
+| --- | --- | --- |
+| 1 — vertical prototype | Complete for the original First Light fixture | `first-light-completion-audit.md` |
+| 2A — campaign slice | Complete for dialogue, deterministic battle, and recruitment | `phase-2-campaign-slice-completion-audit.md` |
+| 2B — continuity/persistence | Complete for the scoped multimap, generational, and portable-save requirements | `phase-2b-campaign-continuity-completion-audit.md` |
+| 3 — creator workflow | Complete for the original Willowbound standard-preset evidence | `phase-3-creator-workflow-completion-audit.md` |
+| 4 — extensibility research | Complete as a decision: integrate only internal data-only encounter context | `phase-4-extensibility-completion-audit.md` |
+| 5 — distribution/services | Active; internal candidate hardening is proven, owner/external gates remain | `phase-5-distribution-progress-audit.md` and `phase-5-owner-decision-checklist.md` |
+
+“Complete” in this table means the accepted experimental phase specification
+is proven by its audit. It does not turn internal schemas, saves, modules, CLI,
+or package layout into public compatibility contracts.
 
 ## Product outcome
 
@@ -91,8 +111,11 @@ boundary automatically becomes public API.
 The focused proposal is recorded in
 `docs/phase-2-campaign-slice-specification.md`. Its first increment deliberately
 limits scope to dialogue, a companion choice, one deterministic battle, and one
-authored recruitment outcome. Persistence, audio, and broader input work remain
-deferred until that loop is validated.
+authored recruitment outcome. Persistence subsequently completed as the scoped
+Phase 2B continuity increment, and responsive/touch behavior gained emulated
+coverage during distribution hardening. Audio, gamepad, and remapping still
+lack an authorized runtime boundary and physical-device evidence; they remain
+explicit Phase 5 owner/device gates rather than unfinished implied Phase 2 work.
 
 ### Phase 3: creator workflow and standard preset
 

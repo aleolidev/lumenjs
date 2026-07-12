@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "dialogue": {
+    "start": "shore-welcome",
+    "nodes": [
+      {
+        "id": "shore-welcome",
+        "speaker": "Sela",
+        "messageKey": "oren-welcome",
+        "choices": [
+          {
+            "id": "take-bramblefin",
+            "labelKey": "choose-bramblefin",
+            "effect": "choose-companion",
+            "creature": "kelpwing",
+            "next": "tower-ready"
+          },
+          {
+            "id": "take-kitehare",
+            "labelKey": "choose-kitehare",
+            "effect": "choose-companion",
+            "creature": "gustling",
+            "next": "tower-ready"
+          }
+        ]
+      },
+      {
+        "id": "tower-ready",
+        "speaker": "Sela",
+        "messageKey": "ready-response",
+        "choices": [
+          {
+            "id": "close-ready",
+            "labelKey": "ready-response",
+            "effect": "close-dialogue"
+          }
+        ]
+      }
+    ]
+  },
+  "moves": [
+    {
+      "id": "reed-rush",
+      "name": "Reed Rush",
+      "power": 4,
+      "uses": 5
+    },
+    {
+      "id": "skybound-hop",
+      "name": "Skybound Hop",
+      "power": 5,
+      "uses": 4
+    }
+  ],
+  "creatures": [
+    {
+      "id": "kelpwing",
+      "name": "Kelpwing",
+      "health": 18,
+      "speed": 5,
+      "moves": ["reed-rush"]
+    },
+    {
+      "id": "gustling",
+      "name": "Gustling",
+      "health": 16,
+      "speed": 7,
+      "moves": ["skybound-hop"]
+    },
+    {
+      "id": "beacon-mite",
+      "name": "Beacon Mite",
+      "health": 20,
+      "speed": 4,
+      "moves": ["reed-rush"]
+    }
+  ],
+  "encounters": [
+    {
+      "id": "tower-beacon-mite",
+      "creature": "beacon-mite"
+    }
+  ],
+  "trainers": [
+    {
+      "id": "sela-shore-guide",
+      "name": "Sela",
+      "party": ["kelpwing"],
+      "encounter": "tower-beacon-mite"
+    }
+  ],
+  "quests": [
+    {
+      "id": "relight-beacon",
+      "titleKey": "quest-starglass-title",
+      "summaryKey": "quest-starglass-summary",
+      "startsAt": "tower-ready",
+      "completesAt": "tower-beacon-mite"
+    }
+  ],
+  "inventory": {
+    "trailTea": 1
+  }
+}

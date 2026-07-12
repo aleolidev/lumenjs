@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "mapId": "tideglass-shore",
+  "mapSource": "maps/tideglass-shore.tmj",
+  "defaultSpawn": "crossing-start",
+  "spawns": [
+    {
+      "id": "crossing-start",
+      "object": "crossing-start"
+    },
+    {
+      "id": "workshop-return",
+      "object": "workshop-return"
+    }
+  ],
+  "characters": [
+    {
+      "id": "oren",
+      "object": "oren-guide",
+      "name": "Sela",
+      "messageKey": "oren-welcome"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "enter-workshop",
+      "object": "workshop-door",
+      "targetMap": "signal-tower",
+      "targetSpawn": "workshop-entry"
+    }
+  ]
+}

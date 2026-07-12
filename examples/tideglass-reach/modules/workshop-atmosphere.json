@@ -1,0 +1,7 @@
+{
+  "format": "lumen-context-contribution-v1-experimental",
+  "values": {
+    "terrain": "starglass-floor",
+    "weather": "indoor-glimmer"
+  }
+}

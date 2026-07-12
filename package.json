@@ -1,19 +1,64 @@
 {
   "name": "lumenjs",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Experimental JavaScript and WebGPU creator CLI for original creature-RPG projects",
+  "private": false,
+  "license": "Apache-2.0",
+  "keywords": [
+    "creature-rpg",
+    "game-development",
+    "webgpu"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleolidev/lumenjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aleolidev/lumenjs/issues"
+  },
+  "homepage": "https://github.com/aleolidev/lumenjs#readme",
   "type": "module",
+  "files": [
+    "bin/lumen.js",
+    "src/creator/backup-store.js",
+    "src/creator/cli.js",
+    "src/creator/export-project.js",
+    "src/creator/focus-project.js",
+    "src/creator/inspect-project.js",
+    "src/creator/playtest-browser.js",
+    "src/creator/playtest-simulation.js",
+    "src/creator/rename-project.js",
+    "src/creator/restore-project.js",
+    "src/creator/scaffold-project.js",
+    "src/creator/schemas.js",
+    "src/creator/validate-project.js",
+    "src/creator/verify-export.js",
+    "src/creator/write-lock.js",
+    "src/modules/resolve-context.js",
+    "src/project/schemas.js",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "bin": {
+    "lumen": "./bin/lumen.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
   "scripts": {
     "check": "npm run check:format && npm run check:types && npm run test:node",
     "check:format": "biome check .",
     "check:types": "tsc --noEmit",
-    "ci": "npm run check && npm run test:browser",
+    "check:release": "node scripts/verify-release-candidate.mjs",
+    "check:cloudflare": "node scripts/verify-cloudflare-build.mjs",
+    "ci": "npm run check && npm run build && npm run check:cloudflare && npm run test:browser",
     "format": "biome check --write .",
     "check:spikes": "node --test spikes/**/*.test.js",
     "build": "vite build",
+    "lumen": "node ./bin/lumen.js",
     "dev": "vite",
     "dev:spikes": "vite spikes/browser",
-    "test:node": "node --test src/**/*.test.js spikes/**/*.test.js",
+    "test:node": "node --test src/*.test.js src/**/*.test.js spikes/**/*.test.js",
     "test:browser": "playwright test",
     "test:gpu": "LUMEN_REQUIRE_GPU=1 playwright test tests/browser/first-light.gpu.spec.js --headed --project=chromium --workers=1"
   },

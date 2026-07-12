@@ -218,6 +218,50 @@ button:hover {
   gap: 10px;
 }
 
+.world-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 48px);
+  gap: 6px;
+}
+.world-controls button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+.world-controls .north {
+  grid-column: 2;
+}
+.world-controls .west {
+  grid-column: 1;
+}
+.world-controls .south {
+  grid-column: 2;
+}
+.world-controls .east {
+  grid-column: 3;
+}
+.world-controls .interact {
+  grid-column: 1 / 4;
+}
+
+.save-status {
+  min-height: 1.5em;
+  margin: 0 2px 18px;
+  color: #a9d7c7;
+}
+
+dialog {
+  width: min(560px, calc(100% - 32px));
+  border: 1px solid #8fc5a6;
+  border-radius: 14px;
+  background: #0b2023;
+  color: #eef8ee;
+  box-shadow: 0 24px 80px #000d;
+}
+dialog::backdrop {
+  background: #02080bc9;
+}
+
 #visual-mode[aria-pressed="true"] {
   border-color: #e9bd62;
   background: #59421f;
@@ -236,6 +280,11 @@ pre {
   max-height: 300px;
   font-size: 0.76rem;
   white-space: pre-wrap;
+}
+dialog pre {
+  padding: 12px;
+  border-radius: 8px;
+  background: #071117;
 }
 .errors {
   margin-top: 18px;

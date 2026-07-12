@@ -3,6 +3,7 @@ const waterTint = [0.82, 0.98, 1, 1];
 const shadowTint = [1, 1, 1, 0.42];
 
 export function buildScene(world, state, { visualMode = "classic" } = {}) {
+  if (world.kind === "interior") return buildInteriorScene(world, state, visualMode);
   const items = [];
   for (let y = 0; y < world.map.height; y += 1) {
     for (let x = 0; x < world.map.width; x += 1) {
@@ -149,6 +150,96 @@ export function buildScene(world, state, { visualMode = "classic" } = {}) {
       playerUnderBridge,
       playerOnBridge,
       bridgeDepth: items.find((item) => item.id === "sunbeam-bridge").depth,
+      playerDepth: items.find((item) => item.id === "player").depth
+    }
+  };
+}
+
+function buildInteriorScene(world, state, visualMode) {
+  const items = [];
+  for (let y = 0; y < world.map.height; y += 1) {
+    for (let x = 0; x < world.map.width; x += 1) {
+      items.push({
+        id: `floor-${x}-${y}`,
+        kind: "surface",
+        texture: "atlas",
+        atlas: (x + y) % 5 === 0 ? 13 : 12,
+        x,
+        y,
+        width: 1,
+        height: 1,
+        elevation: 0,
+        depth: baseDepth(y, 0),
+        tint: [0.92, 0.86, 0.72, 1]
+      });
+    }
+  }
+  for (const collision of world.collisions) {
+    items.push({
+      id: collision.id,
+      kind: "surface",
+      texture: "atlas",
+      atlas: 9,
+      ...collision,
+      elevation: 0.45,
+      depth: baseDepth(collision.y + collision.height, 0.08),
+      tint: white
+    });
+  }
+  for (const transition of world.mapTransitions) {
+    items.push({
+      id: transition.id,
+      kind: "surface",
+      texture: "atlas",
+      atlas: 2,
+      ...transition,
+      elevation: 0.01,
+      depth: baseDepth(transition.y, 0.02),
+      tint: [0.8, 0.92, 1, 1]
+    });
+  }
+  if (world.character) {
+    items.push({
+      id: world.character.object,
+      kind: "sprite",
+      texture: "mira",
+      ...world.character,
+      width: 0.8,
+      spriteHeight: 1.45,
+      depth: baseDepth(world.character.y, 0.13),
+      tint: white
+    });
+  }
+  items.push({
+    id: "player",
+    kind: "sprite",
+    texture: "player",
+    ...state.player,
+    width: 0.72,
+    spriteHeight: 1.35,
+    elevation: 0,
+    depth: baseDepth(state.player.y, 0.14),
+    tint: white
+  });
+  return {
+    projection: "top-down-three-quarter-v1",
+    visualMode,
+    camera: {
+      x: clamp(state.player.x + 0.5, 5, Math.max(5, world.map.width - 5)),
+      y: clamp(state.player.y + 0.6, 4, Math.max(4, world.map.height - 4)),
+      pitchDegrees: 38
+    },
+    items,
+    semantics: {
+      projection: "top-down-three-quarter-v1",
+      visualMode,
+      mapKind: "interior",
+      texturedItemCount: items.length,
+      spriteCount: items.filter((item) => item.kind === "sprite").length,
+      simple3dCount: 0,
+      playerUnderBridge: false,
+      playerOnBridge: false,
+      bridgeDepth: null,
       playerDepth: items.find((item) => item.id === "player").depth
     }
   };

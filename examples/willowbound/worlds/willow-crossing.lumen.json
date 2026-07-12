@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "mapId": "willow-crossing",
+  "mapSource": "maps/willow-crossing.tmj",
+  "defaultSpawn": "crossing-start",
+  "spawns": [
+    {
+      "id": "crossing-start",
+      "object": "crossing-start"
+    },
+    {
+      "id": "workshop-return",
+      "object": "workshop-return"
+    }
+  ],
+  "characters": [
+    {
+      "id": "oren",
+      "object": "oren-guide",
+      "name": "Oren",
+      "messageKey": "oren-welcome"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "enter-workshop",
+      "object": "workshop-door",
+      "targetMap": "starglass-workshop",
+      "targetSpawn": "workshop-entry"
+    }
+  ]
+}

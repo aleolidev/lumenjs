@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "mapId": "signal-tower",
+  "mapSource": "maps/signal-tower.tmj",
+  "defaultSpawn": "workshop-entry",
+  "spawns": [
+    {
+      "id": "workshop-entry",
+      "object": "workshop-entry"
+    }
+  ],
+  "characters": [],
+  "transitions": [
+    {
+      "id": "return-crossing",
+      "object": "crossing-door",
+      "targetMap": "tideglass-shore",
+      "targetSpawn": "workshop-return"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ export function createInitialState(world) {
     format: "lumen-first-light-state-v1",
     tick: 0,
     player: { x: world.spawn.x, y: world.spawn.y, facing: "east" },
-    flags: { [world.beacon.stateKey]: false },
+    flags: world.beacon ? { [world.beacon.stateKey]: false } : {},
     message: null,
     transitions: 0
   };
@@ -33,7 +33,7 @@ export function stepWorld(world, state, action) {
       next.player.x = destination.x;
       next.player.y = destination.y;
       facts.push({ type: "player-moved", ...destination });
-      if (contains(world.transition, destination)) {
+      if (world.transition && contains(world.transition, destination)) {
         next.player = { ...world.transition.target, facing: "east" };
         next.transitions += 1;
         facts.push({ type: "map-transition", id: "east-trail", target: "west-spawn" });
@@ -43,10 +43,10 @@ export function stepWorld(world, state, action) {
     }
   } else if (action === "interact") {
     const target = facedCell(state.player);
-    if (sameCell(target, world.character)) {
-      const lit = next.flags[world.beacon.stateKey];
+    if (world.character && sameCell(target, world.character)) {
+      const lit = world.beacon ? next.flags[world.beacon.stateKey] : false;
       next.message = lit ? world.character.messageAfter : world.character.messageBefore;
-      if (!lit) {
+      if (world.beacon && !lit) {
         next.flags[world.beacon.stateKey] = true;
         facts.push({ type: "flag-changed", key: world.beacon.stateKey, value: true });
       }
@@ -90,7 +90,11 @@ function isWalkable(world, cell) {
   if (cell.x < 0 || cell.y < 0 || cell.x >= world.map.width || cell.y >= world.map.height) {
     return false;
   }
-  if (sameCell(cell, world.character) || sameCell(cell, world.beacon)) return false;
+  if (
+    (world.character && sameCell(cell, world.character)) ||
+    (world.beacon && sameCell(cell, world.beacon))
+  )
+    return false;
   return !world.collisions.some((rectangle) => contains(rectangle, cell));
 }
 

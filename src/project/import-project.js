@@ -1,18 +1,34 @@
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { campaignSchema, manifestSchema, tiledMapSchema, worldSchema } from "./schemas.js";
 
-const ajv = new Ajv2020({ allErrors: true, strict: true });
+const ajv = new Ajv2020({ allErrors: true, strict: true, ownProperties: true });
 const validateManifest = ajv.compile(manifestSchema);
 const validateMap = ajv.compile(tiledMapSchema);
 const validateWorld = ajv.compile(worldSchema);
 const validateCampaign = ajv.compile(campaignSchema);
 
 export function importProject(sources, paths = defaultPaths) {
+  if (!sources || typeof sources !== "object" || Array.isArray(sources)) {
+    return {
+      valid: false,
+      errors: [issue(paths.manifest, "/", sources ?? null, "project sources must be an object")],
+      world: null
+    };
+  }
+  try {
+    sources = structuredClone(sources);
+  } catch {
+    return {
+      valid: false,
+      errors: [issue(paths.manifest, "/", null, "project sources must contain cloneable data")],
+      world: null
+    };
+  }
   const errors = [
-    ...structuralErrors(validateManifest, sources.manifest, paths.manifest),
+    ...validateProjectManifest(sources.manifest, paths.manifest),
     ...structuralErrors(validateMap, sources.map, paths.map),
     ...structuralErrors(validateWorld, sources.world, paths.world),
-    ...(sources.campaign
+    ...(Object.hasOwn(sources, "campaign")
       ? structuralErrors(validateCampaign, sources.campaign, paths.campaign)
       : [])
   ];
@@ -21,7 +37,21 @@ export function importProject(sources, paths = defaultPaths) {
   const manifest = sources.manifest;
   const map = sources.map;
   const metadata = sources.world;
-  const campaign = sources.campaign ?? null;
+  const campaign = Object.hasOwn(sources, "campaign") ? sources.campaign : null;
+  const campaignDeclared = typeof manifest.sources.campaign === "string";
+  const campaignProvided = Object.hasOwn(sources, "campaign");
+  if (campaignDeclared !== campaignProvided) {
+    errors.push(
+      issue(
+        paths.manifest,
+        "/sources/campaign",
+        manifest.sources.campaign ?? null,
+        campaignDeclared
+          ? "declares a campaign source that was not provided"
+          : "does not declare the provided campaign source"
+      )
+    );
+  }
   if (manifest.sources.map !== metadata.mapSource) {
     errors.push(issue(paths.world, "/mapSource", metadata.mapSource, "does not match manifest"));
   }
@@ -58,6 +88,14 @@ export function importProject(sources, paths = defaultPaths) {
       errors.push(issue(paths.world, pointer, name, `references missing Tiled object '${name}'`));
     } else if (object.type !== type) {
       errors.push(issue(paths.world, pointer, name, `expects Tiled type '${type}'`));
+    } else if (!objectOriginInside(object, map)) {
+      errors.push(issue(paths.world, pointer, name, "references a Tiled object outside the map"));
+    } else if (["spawn", "transition"].includes(type) && objectCellCollides(object, objects, map)) {
+      errors.push(
+        issue(paths.world, pointer, name, `references a ${type} inside authored collision`)
+      );
+    } else if (["spawn", "transition"].includes(type) && objectCellOccupied(object, objects, map)) {
+      errors.push(issue(paths.world, pointer, name, `references an occupied ${type} cell`));
     }
   }
   if (campaign) validateCampaignReferences(campaign, paths.campaign, errors);
@@ -103,18 +141,62 @@ export function importProject(sources, paths = defaultPaths) {
   };
 }
 
+export function validateProjectManifest(value, source = "project.lumen.json") {
+  const errors = structuralErrors(validateManifest, value, source);
+  if (errors.length > 0) return errors;
+  const declared = [
+    ["/sources/map", value.sources.map],
+    ["/sources/world", value.sources.world],
+    ...(value.sources.campaign ? [["/sources/campaign", value.sources.campaign]] : []),
+    ...(value.sources.additionalMaps ?? []).flatMap((entry, index) => [
+      [`/sources/additionalMaps/${index}/map`, entry.map],
+      [`/sources/additionalMaps/${index}/world`, entry.world]
+    ])
+  ];
+  const owners = new Map();
+  for (const [pointer, relative] of declared) {
+    const portable = relative.toLowerCase();
+    const previous = owners.get(portable);
+    if (previous) {
+      errors.push(
+        issue(
+          source,
+          pointer,
+          relative,
+          `collides with the source declared at '${previous}' under portable path identity`
+        )
+      );
+    } else owners.set(portable, pointer);
+  }
+  return errors;
+}
+
 export async function loadProject(baseUrl = "/first-light/") {
   const manifestPath = `${baseUrl}project.lumen.json`;
-  const manifest = await fetchJson(manifestPath);
-  const [map, world, campaign] = await Promise.all([
-    fetchJson(`${baseUrl}${manifest.sources.map}`),
-    fetchJson(`${baseUrl}${manifest.sources.world}`),
-    manifest.sources.campaign
-      ? fetchJson(`${baseUrl}${manifest.sources.campaign}`)
-      : Promise.resolve(null)
-  ]);
+  let manifest;
+  try {
+    manifest = await fetchJson(manifestPath);
+  } catch (error) {
+    return failedProjectLoad(error);
+  }
+  const manifestErrors = validateProjectManifest(manifest, manifestPath);
+  if (manifestErrors.length > 0) return { valid: false, errors: manifestErrors, world: null };
+  let map;
+  let world;
+  let campaign;
+  try {
+    [map, world, campaign] = await Promise.all([
+      fetchJson(`${baseUrl}${manifest.sources.map}`),
+      fetchJson(`${baseUrl}${manifest.sources.world}`),
+      manifest.sources.campaign
+        ? fetchJson(`${baseUrl}${manifest.sources.campaign}`)
+        : Promise.resolve(null)
+    ]);
+  } catch (error) {
+    return failedProjectLoad(error);
+  }
   return importProject(
-    { manifest, map, world, ...(campaign ? { campaign } : {}) },
+    { manifest, map, world, ...(manifest.sources.campaign ? { campaign } : {}) },
     {
       manifest: manifestPath,
       map: `${baseUrl}${manifest.sources.map}`,
@@ -127,16 +209,63 @@ export async function loadProject(baseUrl = "/first-light/") {
 }
 
 async function fetchJson(path) {
-  const response = await fetch(path);
-  if (!response.ok) throw new Error(`Could not load ${path}: HTTP ${response.status}`);
-  return response.json();
+  let response;
+  try {
+    response = await fetch(path);
+  } catch (error) {
+    throw new ProjectSourceLoadError(
+      path,
+      `Could not load ${path}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+  if (!response.ok)
+    throw new ProjectSourceLoadError(path, `Could not load ${path}: HTTP ${response.status}`);
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new ProjectSourceLoadError(
+      path,
+      `Could not parse ${path}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
+class ProjectSourceLoadError extends Error {
+  constructor(source, message) {
+    super(message);
+    this.source = source;
+  }
+}
+
+function failedProjectLoad(error) {
+  return {
+    valid: false,
+    errors: [
+      issue(
+        error instanceof ProjectSourceLoadError ? error.source : "project.lumen.json",
+        "/",
+        null,
+        error instanceof Error ? error.message : String(error)
+      )
+    ],
+    world: null
+  };
 }
 
 function structuralErrors(validate, value, source) {
   if (validate(value)) return [];
   return (validate.errors ?? []).map((error) =>
-    issue(source, error.instancePath || "/", error.params?.additionalProperty, error.message)
+    issue(source, schemaPointer(error), error.params?.additionalProperty, error.message)
   );
+}
+
+function schemaPointer(error) {
+  const property = error.params?.missingProperty ?? error.params?.additionalProperty;
+  if (typeof property === "string") {
+    const escaped = property.replaceAll("~", "~0").replaceAll("/", "~1");
+    return `${error.instancePath}/${escaped}`;
+  }
+  return error.instancePath || "/";
 }
 
 function issue(source, pointer, objectId, message = "is invalid") {
@@ -148,6 +277,41 @@ function objectCell(object, map) {
     x: Math.floor(object.x / map.tilewidth),
     y: Math.floor(object.y / map.tileheight)
   };
+}
+
+function objectOriginInside(object, map) {
+  return (
+    object.x >= 0 &&
+    object.y >= 0 &&
+    object.x < map.width * map.tilewidth &&
+    object.y < map.height * map.tileheight
+  );
+}
+
+function objectCellCollides(object, objects, map) {
+  const point = objectCell(object, map);
+  return [...objects.values()]
+    .filter((candidate) => candidate.type === "collision")
+    .some((candidate) => contains(objectRectangle(candidate, map), point));
+}
+
+function objectCellOccupied(object, objects, map) {
+  const point = objectCell(object, map);
+  return [...objects.values()]
+    .filter((candidate) => candidate !== object && ["character", "beacon"].includes(candidate.type))
+    .some((candidate) => {
+      const cell = objectCell(candidate, map);
+      return cell.x === point.x && cell.y === point.y;
+    });
+}
+
+function contains(rectangle, point) {
+  return (
+    point.x >= rectangle.x &&
+    point.y >= rectangle.y &&
+    point.x < rectangle.x + rectangle.width &&
+    point.y < rectangle.y + rectangle.height
+  );
 }
 
 function objectRectangle(object, map) {
@@ -178,12 +342,27 @@ function validateCampaignReferences(campaign, source, errors) {
   const moveIds = unique(campaign.moves, "moves");
   const creatureIds = unique(campaign.creatures, "creatures");
   const nodeIds = unique(campaign.dialogue.nodes, "dialogue/nodes");
+  const nodesById = new Map(campaign.dialogue.nodes.map((node) => [node.id, node]));
+  const starterIds = new Set(campaign.starters);
+  const selectableStarters = new Set();
+  const starterChoices = [];
   if (!nodeIds.has(campaign.dialogue.start))
     errors.push(
       issue(source, "/dialogue/start", campaign.dialogue.start, "references missing dialogue node")
     );
   for (const node of campaign.dialogue.nodes) {
-    for (const choice of node.choices) {
+    const choiceIds = new Set();
+    for (const [choiceIndex, choice] of node.choices.entries()) {
+      if (choiceIds.has(choice.id))
+        errors.push(
+          issue(
+            source,
+            `/dialogue/nodes/${node.id}/choices/${choiceIndex}/id`,
+            choice.id,
+            "is duplicated within the dialogue node"
+          )
+        );
+      choiceIds.add(choice.id);
       if (choice.next && !nodeIds.has(choice.next))
         errors.push(
           issue(
@@ -193,17 +372,88 @@ function validateCampaignReferences(campaign, source, errors) {
             "references missing dialogue node"
           )
         );
-      if (choice.effect === "choose-companion" && !creatureIds.has(choice.creature))
-        errors.push(
-          issue(
-            source,
-            `/dialogue/nodes/${node.id}/choices/${choice.id}/creature`,
-            choice.creature,
-            "references missing creature"
-          )
-        );
+      if (choice.effect === "choose-companion") {
+        if (!creatureIds.has(choice.creature))
+          errors.push(
+            issue(
+              source,
+              `/dialogue/nodes/${node.id}/choices/${choice.id}/creature`,
+              choice.creature,
+              "references missing creature"
+            )
+          );
+        else if (!starterIds.has(choice.creature))
+          errors.push(
+            issue(
+              source,
+              `/dialogue/nodes/${node.id}/choices/${choice.id}/creature`,
+              choice.creature,
+              "must reference a declared starter"
+            )
+          );
+        else starterChoices.push({ nodeId: node.id, creature: choice.creature });
+      } else {
+        if (choice.next)
+          errors.push(
+            issue(
+              source,
+              `/dialogue/nodes/${node.id}/choices/${choice.id}/next`,
+              choice.next,
+              "must be absent for close-dialogue"
+            )
+          );
+        if (choice.creature)
+          errors.push(
+            issue(
+              source,
+              `/dialogue/nodes/${node.id}/choices/${choice.id}/creature`,
+              choice.creature,
+              "must be absent for close-dialogue"
+            )
+          );
+      }
     }
   }
+  const reachableNodes = new Set();
+  const pendingNodes = [campaign.dialogue.start];
+  while (pendingNodes.length > 0) {
+    const nodeId = pendingNodes.shift();
+    if (reachableNodes.has(nodeId)) continue;
+    const node = nodesById.get(nodeId);
+    if (!node) continue;
+    reachableNodes.add(nodeId);
+    for (const choice of node.choices) if (choice.next) pendingNodes.push(choice.next);
+  }
+  for (const node of campaign.dialogue.nodes)
+    if (!reachableNodes.has(node.id))
+      errors.push(
+        issue(source, `/dialogue/nodes/${node.id}`, node.id, "is unreachable from dialogue.start")
+      );
+  const terminatingNodes = new Set(
+    campaign.dialogue.nodes
+      .filter((node) => node.choices.some((choice) => !choice.next))
+      .map((node) => node.id)
+  );
+  let terminationChanged = true;
+  while (terminationChanged) {
+    terminationChanged = false;
+    for (const node of campaign.dialogue.nodes) {
+      if (
+        !terminatingNodes.has(node.id) &&
+        node.choices.some((choice) => choice.next && terminatingNodes.has(choice.next))
+      ) {
+        terminatingNodes.add(node.id);
+        terminationChanged = true;
+      }
+    }
+  }
+  for (const nodeId of reachableNodes)
+    if (!terminatingNodes.has(nodeId))
+      errors.push(
+        issue(source, `/dialogue/nodes/${nodeId}`, nodeId, "cannot reach a closing dialogue choice")
+      );
+  for (const choice of starterChoices)
+    if (reachableNodes.has(choice.nodeId)) selectableStarters.add(choice.creature);
   for (const creature of campaign.creatures) {
     for (const move of creature.moves) {
       if (!moveIds.has(move))
@@ -215,6 +465,8 @@ function validateCampaignReferences(campaign, source, errors) {
   for (const starter of campaign.starters) {
     if (!creatureIds.has(starter))
       errors.push(issue(source, "/starters", starter, "references missing creature"));
+    else if (!selectableStarters.has(starter))
+      errors.push(issue(source, "/starters", starter, "has no companion choice"));
   }
   if (!creatureIds.has(campaign.encounter.creature))
     errors.push(
@@ -223,6 +475,15 @@ function validateCampaignReferences(campaign, source, errors) {
         "/encounter/creature",
         campaign.encounter.creature,
         "references missing creature"
+      )
+    );
+  if (campaign.starters.includes(campaign.encounter.creature))
+    errors.push(
+      issue(
+        source,
+        "/encounter/creature",
+        campaign.encounter.creature,
+        "must be distinct from the starter roster"
       )
     );
 }

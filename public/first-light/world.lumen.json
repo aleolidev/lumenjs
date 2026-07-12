@@ -20,5 +20,15 @@
   "transition": {
     "object": "east-trail",
     "target": "west-spawn"
-  }
+  },
+  "additionalSpawns": [{ "id": "house-return", "object": "house-return" }],
+  "mapTransitions": [
+    {
+      "id": "enter-lantern-house",
+      "object": "lantern-house-door",
+      "targetMap": "lantern-house",
+      "targetSpawn": "house-entry",
+      "facing": "north"
+    }
+  ]
 }

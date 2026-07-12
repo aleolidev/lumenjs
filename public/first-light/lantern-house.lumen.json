@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "mapId": "lantern-house",
+  "mapSource": "lantern-house.tmj",
+  "kind": "interior",
+  "defaultSpawn": "house-entry",
+  "spawns": [{ "id": "house-entry", "object": "house-entry" }],
+  "character": {
+    "object": "house-mira",
+    "name": "Mira",
+    "message": "The house is quiet. The trail will wait for our third light.",
+    "messageWithGlintail": "Three lights now share this shelter. The next trail can begin."
+  },
+  "transitions": [
+    {
+      "id": "leave-lantern-house",
+      "object": "house-exit",
+      "targetMap": "lantern-vale",
+      "targetSpawn": "house-return",
+      "facing": "south"
+    }
+  ]
+}

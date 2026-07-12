@@ -1,0 +1,7 @@
+{
+  "format": "lumen-context-contribution-v1-experimental",
+  "values": {
+    "itemPolicy": "limited",
+    "recoveryPolicy": "careful"
+  }
+}
